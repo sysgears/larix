@@ -68,6 +68,16 @@ ruleTester.run('no-external-imports', rule, {
           message: "Can't find 'dependency' in the packages.json or in related module's package.json."
         }
       ]
+    }),
+    test({
+      filename: testPathModule,
+      code: 'import value from "dependency"',
+      errors: [
+        {
+          ruleId: 'no-extraneous-dependencies',
+          message: "Can't find 'dependency' in the packages.json or in related module's package.json."
+        }
+      ]
     })
   ]
 });
