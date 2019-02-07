@@ -22,15 +22,10 @@ function reportIfMissing(context, node, moduleDependencies) {
 
 module.exports = {
   meta: {
+    type: "problem",
     docs: {
       description: 'No exteral imports outside specific module.',
-      category: 'Fill me in',
-      recommended: false
-    },
-    fixable: null, // or "code" or "whitespace"
-    schema: [
-      // fill in your schema
-    ]
+    }
   },
 
   create: function(context) {
@@ -39,7 +34,6 @@ module.exports = {
     //----------------------------------------------------------------------
     const moduleDependencies = new Set();
     getDependencies(context.getFilename(), moduleDependencies);
-    // any helper functions should go here or else delete this section
     //----------------------------------------------------------------------
     // Public
     //----------------------------------------------------------------------
