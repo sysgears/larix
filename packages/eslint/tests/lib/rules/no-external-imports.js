@@ -17,6 +17,12 @@ const testPath = path.join(
   'foo.js'
 );
 
+const testPathModule = path.join(
+    __dirname,
+    '../../testArchitecture/no-external-imports/default/modules/test-module-2/content',
+    'foo.js'
+);
+
 function test(t) {
   return Object.assign(
     {
@@ -46,6 +52,10 @@ ruleTester.run('no-external-imports', rule, {
     test({ code: 'import Module2 from "test-module-2-client-react"' }),
     test({
       code: 'import Bla from "bla"'
+    }),
+    test({
+      filename: testPathModule,
+      code: 'import Ind from "ind"'
     })
   ],
 

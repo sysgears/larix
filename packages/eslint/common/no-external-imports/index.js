@@ -14,7 +14,7 @@ module.exports = (providedPath, moduleDependencies) => {
 };
 
 function checkDependenciesInNodeModules(currentFolderPath, packageJsonDependencies) {
-  const nodeModulesPath = findFilesystemEntity(currentFolderPath, 'node_modules');
+  const nodeModulesPath = findFilesystemEntity(currentFolderPath, 'test_node_modules');
   if (typeof nodeModulesPath !== 'undefined') {
     collectNodeModulesDependencies(nodeModulesPath, packageJsonDependencies);
   }
@@ -42,10 +42,23 @@ function collectNodeModulesDependencies(currentPath, packageJsonDependencies) {
   const nodeModulesFolders = fs.readdirSync(currentPath);
   for (const moduleFolder of nodeModulesFolders) {
     const stat = fs.lstatSync(path.join(currentPath, moduleFolder));
-
     if (packageJsonDependencies.has(moduleFolder)) {
       if (stat.isSymbolicLink()) {
         getDependenciesFromPackageJson(path.join(currentPath, moduleFolder, 'package.json'), packageJsonDependencies);
+      }
+    }
+
+    if(stat.isDirectory()) {
+      const currentPathInDirectory = path.join(currentPath, moduleFolder);
+      const nodeModulesFoldersInDirectory = fs.readdirSync(currentPathInDirectory);
+      for (const moduleFolder of nodeModulesFoldersInDirectory) {
+        const stat = fs.lstatSync(path.join(currentPathInDirectory, moduleFolder));
+        if(stat.isSymbolicLink()) {
+          const moduleFolderInDirectory = currentPathInDirectory.split('/')[currentPathInDirectory.split('/').length - 1] + "/" + moduleFolder
+          if (packageJsonDependencies.has(moduleFolderInDirectory)) {
+            getDependenciesFromPackageJson(path.join(currentPath, moduleFolderInDirectory, 'package.json'), packageJsonDependencies);
+          }
+        }
       }
     }
   }
