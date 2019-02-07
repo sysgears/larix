@@ -4,8 +4,8 @@ const fs = require('fs');
 
 const DEPENDENCIES_VARIANTS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
 
-module.exports = (providedPath, moduleDependencies) => {
-  const dirPath = path.resolve(path.dirname(providedPath));
+module.exports = (filenamePath, moduleDependencies) => {
+  const dirPath = path.resolve(path.dirname(filenamePath));
   const packageJsonPath = findFilesystemEntity(dirPath, 'package.json');
   if (typeof packageJsonPath !== 'undefined') {
     getDependenciesFromPackageJson(packageJsonPath, moduleDependencies);
