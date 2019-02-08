@@ -3,8 +3,8 @@ import * as path from 'path';
 
 const DEPENDENCIES_VARIANTS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
 
-const getDependencies = (filenamePath: string, moduleDependencies: Set<string>): void => {
-  const dirPath = path.resolve(path.dirname(filenamePath));
+const getDependencies = (fileDirPath: string, moduleDependencies: Set<string>): void => {
+  const dirPath = path.resolve(path.dirname(fileDirPath));
   const packageJsonPath = findFilesystemEntity(dirPath, 'package.json');
   if (typeof packageJsonPath !== 'undefined') {
     getDependenciesFromPackageJson(packageJsonPath, moduleDependencies);
