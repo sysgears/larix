@@ -8,22 +8,26 @@
     "eslint-plugin"
   ],
   "author": "SysGears INC",
-  "main": "lib/index.js",
+  "main": "lib/index.ts",
   "scripts": {
     "build": "yarn",
-    "test": "npm-run-all -s prepareForTest start-test prepareForProject",
+    "compile-rules": "tsc",
+    "test": "npm-run-all compile-rules -s prepareForTest start-test prepareForProject",
     "prepareForTest": "bash ./common/no-external-imports/prepareTest.sh commandFirst",
     "start-test" : "mocha tests --recursive",
     "prepareForProject": "bash ./common/no-external-imports/prepareTest.sh"
   },
   "dependencies": {
     "requireindex": "^1.1.0",
+    "eslint": "^3.9.1",
     "read-pkg-up": "^4.0.0"
   },
   "devDependencies": {
-    "eslint": "~3.9.1",
+    "typescript": "^2.8.3",
     "mocha": "^3.1.2",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "@types/node": "^10.12.23",
+    "@types/eslint": "^4.16.6"
   },
   "engines": {
     "node": ">=0.10.0"

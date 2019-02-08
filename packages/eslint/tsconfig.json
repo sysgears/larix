@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "types" : ["node"],
+    "lib": ["es6"],
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "pretty": true,
+    "declaration": true
+  },
+  "include": [
+    "**/typings.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "./build",
+    "./tests/testArchitecture/**"
+  ]
+}

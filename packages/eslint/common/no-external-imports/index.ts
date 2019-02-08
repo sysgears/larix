@@ -1,10 +1,9 @@
-// require('./typings.d.ts');
-const path = require('path');
-const fs = require('fs');
+import * as fs from 'fs';
+import * as path from 'path';
 
 const DEPENDENCIES_VARIANTS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
 
-module.exports = (filenamePath, moduleDependencies) => {
+const getDependencies = (filenamePath: string, moduleDependencies: Set<string>): void => {
   const dirPath = path.resolve(path.dirname(filenamePath));
   const packageJsonPath = findFilesystemEntity(dirPath, 'package.json');
   if (typeof packageJsonPath !== 'undefined') {
@@ -13,7 +12,7 @@ module.exports = (filenamePath, moduleDependencies) => {
   checkDependenciesInNodeModules(dirPath, moduleDependencies);
 };
 
-function checkDependenciesInNodeModules(currentFolderPath, packageJsonDependencies) {
+function checkDependenciesInNodeModules(currentFolderPath: string, packageJsonDependencies: Set<string>) {
   const nodeModulesPath = findFilesystemEntity(currentFolderPath, 'node_modules');
   if (typeof nodeModulesPath !== 'undefined') {
     collectNodeModulesDependencies(nodeModulesPath, packageJsonDependencies);
@@ -23,7 +22,7 @@ function checkDependenciesInNodeModules(currentFolderPath, packageJsonDependenci
   }
 }
 
-function findFilesystemEntity(current, name) {
+function findFilesystemEntity(current: string, name: string) {
   let prev;
   do {
     const fileName = path.join(current, name);
@@ -38,7 +37,7 @@ function findFilesystemEntity(current, name) {
   }
 }
 
-function collectNodeModulesDependencies(currentPath, packageJsonDependencies) {
+function collectNodeModulesDependencies(currentPath: string, packageJsonDependencies: Set<string>) {
   const nodeModulesFolders = fs.readdirSync(currentPath);
   for (const moduleFolder of nodeModulesFolders) {
     const stat = fs.lstatSync(path.join(currentPath, moduleFolder));
@@ -48,15 +47,21 @@ function collectNodeModulesDependencies(currentPath, packageJsonDependencies) {
       }
     }
 
-    if(stat.isDirectory()) {
+    if (stat.isDirectory()) {
       const currentPathInDirectory = path.join(currentPath, moduleFolder);
       const nodeModulesFoldersInDirectory = fs.readdirSync(currentPathInDirectory);
-      for (const moduleFolder of nodeModulesFoldersInDirectory) {
-        const stat = fs.lstatSync(path.join(currentPathInDirectory, moduleFolder));
-        if(stat.isSymbolicLink()) {
-          const moduleFolderInDirectory = currentPathInDirectory.split('/')[currentPathInDirectory.split('/').length - 1] + "/" + moduleFolder
-          if (packageJsonDependencies.has(moduleFolderInDirectory)) {
-            getDependenciesFromPackageJson(path.join(currentPath, moduleFolderInDirectory, 'package.json'), packageJsonDependencies);
+      for (const moduleFolderInDirectory of nodeModulesFoldersInDirectory) {
+        const statInDirectory = fs.lstatSync(path.join(currentPathInDirectory, moduleFolderInDirectory));
+        if (statInDirectory.isSymbolicLink()) {
+          const pathFolderInDirectory =
+            currentPathInDirectory.split('/')[currentPathInDirectory.split('/').length - 1] +
+            '/' +
+            moduleFolderInDirectory;
+          if (packageJsonDependencies.has(pathFolderInDirectory)) {
+            getDependenciesFromPackageJson(
+              path.join(currentPath, pathFolderInDirectory, 'package.json'),
+              packageJsonDependencies
+            );
           }
         }
       }
@@ -64,21 +69,21 @@ function collectNodeModulesDependencies(currentPath, packageJsonDependencies) {
   }
 }
 
-function getDependenciesFromPackageJson(packageJsonPath, moduleDependencies) {
-  // don't use require here to avoid caching
-  // remove BOM from file content before parsing
+function getDependenciesFromPackageJson(packageJsonPath: string, moduleDependencies: Set<string>) {
   const content = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8').replace(/^\uFEFF/, ''));
-  DEPENDENCIES_VARIANTS.forEach(async dependencyVariant => {
+  DEPENDENCIES_VARIANTS.forEach(dependencyVariant => {
     if (typeof content[dependencyVariant] !== 'undefined') {
       addDependencies(moduleDependencies, content[dependencyVariant]);
     }
   });
 }
 
-function addDependencies(moduleDependencies, dependencies) {
+function addDependencies(moduleDependencies: Set<string>, dependencies: { [key: string]: string }) {
   for (const name in dependencies) {
     if (dependencies.hasOwnProperty(name)) {
       moduleDependencies.add(name);
     }
   }
 }
+
+export default getDependencies;

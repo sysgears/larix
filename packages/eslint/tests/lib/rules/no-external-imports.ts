@@ -3,13 +3,13 @@
  * @author SysGears INC
  */
 'use strict';
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Requirements
-//------------------------------------------------------------------------------
-var rule = require('../../../lib/rules/no-external-imports'),
-  RuleTester = require('eslint').RuleTester;
+// ------------------------------------------------------------------------------
 
-var path = require('path');
+import { RuleTester } from 'eslint';
+import * as path from 'path';
+import rule from '../../../lib/rules/no-external-imports';
 
 const testPath = path.join(
   __dirname,
@@ -18,34 +18,29 @@ const testPath = path.join(
 );
 
 const testPathModule = path.join(
-    __dirname,
-    '../../testArchitecture/no-external-imports/default/modules/test-module-2/content',
-    'foo.js'
+  __dirname,
+  '../../testArchitecture/no-external-imports/default/modules/test-module-2/content',
+  'foo.js'
 );
 
-function test(t) {
-  return Object.assign(
-    {
-      filename: testPath
-    },
-    t,
-    {
-      parserOptions: Object.assign(
-        {
-          sourceType: 'module',
-          ecmaVersion: 6
-        },
-        t.parserOptions
-      )
+function test(t: any) {
+  return {
+    filename: testPath,
+    ...t,
+
+    parserOptions: {
+      sourceType: 'module',
+      ecmaVersion: 6,
+      ...t.parserOptions
     }
-  );
+  };
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 // Tests
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
-var ruleTester = new RuleTester();
+const ruleTester = new RuleTester();
 ruleTester.run('no-external-imports', rule, {
   valid: [
     test({ code: 'import Module from "@modules/test-module-3-client-react"' }),
