@@ -1,0 +1,78 @@
+import * as cluster from 'cluster';
+import * as minilog from 'minilog';
+import * as yargs from 'yargs';
+
+import createBuilders from './createBuilders';
+import execute from './executor';
+
+minilog.enable();
+const logger = minilog('zen');
+try {
+  const VERSION = require('../package.json').version; // tslint:disable-line
+  const argv = yargs
+    .command('build', 'compiles package for usage in production')
+    .command(['watch', 'start'], 'launches package in development mode with hot code reload')
+    .command('exp', 'launches server for exp and exp tool')
+    .command('test [mochapack options]', 'runs package tests')
+    .demandCommand(1, '')
+    .option('c', {
+      describe: 'Specify path to config file',
+      type: 'string'
+    })
+    .option('d', {
+      describe: 'Disable builders with names having regexp',
+      type: 'string'
+    })
+    .option('e', {
+      describe: 'Enable builders with names having regexp',
+      type: 'string'
+    })
+    .option('n', {
+      describe: 'Show builder names',
+      default: false,
+      type: 'boolean'
+    })
+    .option('verbose', {
+      alias: 'v',
+      default: false,
+      describe: 'Show generated config',
+      type: 'boolean'
+    })
+    .version(VERSION).argv;
+
+  const cmd = argv._[0];
+  let config;
+  if (argv.help && cmd !== 'exp') {
+    yargs.showHelp();
+  } else {
+    const cwd = process.cwd();
+    if (['exp', 'build', 'test', 'watch', 'start'].indexOf(cmd) >= 0) {
+      config = createBuilders({ cwd, cmd, argv });
+    }
+    if (cluster.isMaster) {
+      logger.info(`Version ${VERSION}`);
+      if (argv.n) {
+        logger.info('Builders:');
+        const builderNames = Object.keys(config.builders)
+          .map(key => (config.builders[key].enabled ? '+' : '-') + key)
+          .sort();
+        builderNames.forEach(key => logger.info('    ' + key));
+      }
+    }
+    const enabledBuilders = Object.keys(config.builders)
+      .filter(key => config.builders[key].enabled)
+      .reduce((out, key) => {
+        out[key] = config.builders[key];
+        return out;
+      }, {});
+
+    if (Object.keys(enabledBuilders).length === 0) {
+      logger.warn('No enabled zen builders found, exiting.');
+    } else {
+      execute(cmd, argv, enabledBuilders, config.zen);
+    }
+  }
+} catch (e) {
+  logger.error(e);
+  process.exit(1);
+}

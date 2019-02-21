@@ -1,0 +1,86 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+import { Builder } from '../Builder';
+import { ConfigPlugin } from '../ConfigPlugin';
+import Zen from '../Zen';
+import JSRuleFinder from './shared/JSRuleFinder';
+import { addParalleLoaders, hasParallelLoalder } from './shared/parallelLoader';
+
+export default class TypeScriptPlugin implements ConfigPlugin {
+  public configure(builder: Builder, zen: Zen) {
+    const stack = builder.stack;
+
+    if (stack.hasAll(['ts', 'webpack'])) {
+      const atl = builder.require.probe('awesome-typescript-loader');
+      const tsChecker = builder.require.probe('fork-ts-checker-webpack-plugin');
+      let tsLoaderOpts: any = {};
+      if (!!builder.require.probe('ts-loader')) {
+        const verDigits = builder.require('ts-loader/package.json').version.split('.');
+        const tsLoaderVer = verDigits[0] * 10 + +verDigits[1];
+        tsLoaderOpts = zen.createConfig(builder, 'tsLoader', {
+          transpileOnly: tsChecker ? true : false,
+          happyPackMode: hasParallelLoalder(builder) ? true : false,
+          ...builder.tsLoaderOptions
+        });
+        if (tsLoaderVer > 33) {
+          tsLoaderOpts.experimentalWatchApi = true;
+        }
+      }
+
+      const jsRuleFinder = new JSRuleFinder(builder);
+      const tsRule = jsRuleFinder.findAndCreateTSRule();
+      tsRule.test = /\.ts$/;
+      tsRule.use = addParalleLoaders(builder, zen, [
+        atl
+          ? {
+              loader: 'awesome-typescript-loader',
+              options: zen.createConfig(builder, 'awesomeTypescript', { ...builder.tsLoaderOptions, useCache: true })
+            }
+          : {
+              loader: 'ts-loader',
+              options: tsLoaderOpts
+            }
+      ]);
+
+      if (atl) {
+        builder.config = zen.merge(builder.config, {
+          plugins: [new (builder.require('awesome-typescript-loader')).CheckerPlugin()]
+        });
+      }
+
+      if (tsLoaderOpts.transpileOnly && tsChecker) {
+        builder.config = zen.merge(builder.config, {
+          plugins: [
+            new (builder.require('fork-ts-checker-webpack-plugin'))({
+              tsconfig: path.join(builder.require.cwd, 'tsconfig.json'),
+              checkSyntacticErrors: hasParallelLoalder(builder)
+            })
+          ]
+        });
+      }
+
+      builder.config.resolve.extensions = ['.']
+        .map(prefix => jsRuleFinder.extensions.map(ext => prefix + ext))
+        .reduce((acc, val) => acc.concat(val))
+        .concat(['.json']);
+
+      if (!stack.hasAny('dll')) {
+        for (const key of Object.keys(builder.config.entry)) {
+          const entry = builder.config.entry[key];
+          for (let idx = 0; idx < entry.length; idx++) {
+            const item = entry[idx];
+            if (['.js', '.jsx', '.ts', '.tsx'].indexOf(path.extname(item)) >= 0 && item.indexOf('node_modules') < 0) {
+              const baseItem = path.join(path.dirname(item), path.basename(item, path.extname(item)));
+              for (const ext of ['.js', '.jsx', '.ts', '.tsx']) {
+                if (fs.existsSync(baseItem + ext)) {
+                  entry[idx] = (baseItem.startsWith('.') ? '' : './') + baseItem + ext;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
