@@ -1,0 +1,14 @@
+{
+  "name": "{;slug;}",
+  "version": "0.1.0",
+  "private": true,
+  "!presets": ["ts", "babel", "react", "web"],
+  "scripts": {
+    "start": "zen start",
+    "build": "zen build",
+    "test": "zen test"
+  },
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}

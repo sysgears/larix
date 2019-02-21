@@ -1,7 +1,7 @@
 # Zen
 
 [![Join the chat at https://gitter.im/sysgears/zen](https://badges.gitter.im/sysgears/zen.svg)](https://gitter.im/sysgears/zen)
-[![npm version](https://badge.fury.io/js/@larix/zen.svg)](https://badge.fury.io/js/@larix/zen) [![Twitter Follow](https://img.shields.io/twitter/follow/sysgears.svg?style=social)](https://twitter.com/sysgears)
+[![npm version](https://badge.fury.io/js/%40larix2Fzen.svg)](https://badge.fury.io/js/%40larix2Fzen) [![Twitter Follow](https://img.shields.io/twitter/follow/sysgears.svg?style=social)](https://twitter.com/sysgears)
 
 ## Description
 

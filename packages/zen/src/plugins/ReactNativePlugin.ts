@@ -112,7 +112,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
             {
               test: mobileAssetTest,
               use: {
-                loader: 'zen/lib/plugins/react-native/assetLoader',
+                loader: '@larix/zen/lib/plugins/react-native/assetLoader',
                 options: zen.createConfig(builder, 'asset', {
                   platform: stack.platform,
                   root: builder.require.cwd,

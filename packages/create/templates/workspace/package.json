@@ -1,0 +1,14 @@
+{
+  "name": "{;slug;}",
+  "private": true,
+  "scripts": {
+    "start": "zen start",
+    "android": "zen start -e android -d ios -d web",
+    "ios": "zen start -e ios -d android -d web",
+    "build": "zen build",
+    "test": "zen test"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

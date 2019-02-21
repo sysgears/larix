@@ -12,11 +12,6 @@
     "pretty": true,
     "removeComments": true
   },
-  "include": [
-    "**/typings.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
   "exclude": [
     "node_modules"
   ]

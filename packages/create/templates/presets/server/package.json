@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "dotenv": "^6.2.0",
+    "dotenv-expand": "^4.2.0",
+    "source-map-support": "^0.5.10"
+  }
+}
