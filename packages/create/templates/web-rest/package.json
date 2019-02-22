@@ -5,7 +5,7 @@
   "!presets": ["ts", "babel", "react", "web"],
   "scripts": {
     "start": "zen start",
-    "build": "zen build",
+    "build": "cross-env NODE_ENV=production zen build",
     "test": "zen test"
   },
   "dependencies": {
