@@ -1,0 +1,8 @@
+.idea
+.vscode
+.history
+.npmrc
+lib
+node_modules
+*.log
+*.sh

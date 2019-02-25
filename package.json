@@ -8,8 +8,7 @@
     "lint": "lerna run -- lint",
     "watch": "lerna run --parallel -- watch",
     "predeploy": "yarn build && yarn test",
-    "deploy": "lerna publish --independent",
-    "precommit": "lint-staged"
+    "deploy": "lerna publish --independent"
   },
   "workspaces": [
     "packages/*"

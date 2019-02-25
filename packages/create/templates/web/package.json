@@ -1,0 +1,14 @@
+{
+  "name": "{;slug;}",
+  "version": "0.1.0",
+  "private": true,
+  "!presets": ["ts", "babel", "react", "react-apollo", "web", "graphql"],
+  "scripts": {
+    "start": "zen start",
+    "build": "cross-env NODE_ENV=production zen build",
+    "test": "zen test"
+  },
+  "dependencies": {
+    "apollo-boost": "^0.1.23"
+  }
+}
