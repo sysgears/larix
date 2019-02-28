@@ -1,6 +1,7 @@
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Zen from '../Zen';
+import { excludeNonProjectModules } from './shared/JSRuleFinder';
 
 const postCssDefaultConfig = (builder: Builder) => {
   return {
@@ -28,9 +29,11 @@ export default class CssProcessorPlugin implements ConfigPlugin {
 
       if (stack.hasAny('server')) {
         createRule = (ext: string, nodeModules: boolean, ruleList: any[]) => ({
-          test: nodeModules
-            ? new RegExp(`^.*\\/node_modules\\/.*\\.${ext}$`)
-            : new RegExp(`^(?!.*\\/node_modules\\/).*\\.${ext}$`),
+          test: new RegExp(`\\.${ext}$`),
+          exclude: () => {
+            const nonProjectModule = excludeNonProjectModules(builder);
+            return !nodeModules ? nonProjectModule : !nonProjectModule;
+          },
           use: ([
             { loader: 'isomorphic-style-loader', options: zen.createConfig(builder, 'isomorphicStyle', {}) },
             { loader: 'css-loader', options: zen.createConfig(builder, 'css', { ...loaderOptions }) }
@@ -62,9 +65,11 @@ export default class CssProcessorPlugin implements ConfigPlugin {
               plugin = new ExtractCSSPlugin({ filename: `[name].[contenthash].css` });
             }
             return {
-              test: nodeModules
-                ? new RegExp(`^.*\\/node_modules\\/.*\\.${ext}$`)
-                : new RegExp(`^(?!.*\\/node_modules\\/).*\\.${ext}$`),
+              test: new RegExp(`\\.${ext}$`),
+              exclude: () => {
+                const nonProjectModule = excludeNonProjectModules(builder);
+                return !nodeModules ? nonProjectModule : !nonProjectModule;
+              },
               use: dev
                 ? ([
                     { loader: 'style-loader', options: zen.createConfig(builder, 'style', {}) },
@@ -134,9 +139,11 @@ export default class CssProcessorPlugin implements ConfigPlugin {
               });
             }
             return {
-              test: nodeModules
-                ? new RegExp(`^.*\\/node_modules\\/.*\\.${ext}$`)
-                : new RegExp(`^(?!.*\\/node_modules\\/).*\\.${ext}$`),
+              test: new RegExp(`\\.${ext}$`),
+              exclude: () => {
+                const nonProjectModule = excludeNonProjectModules(builder);
+                return !nodeModules ? nonProjectModule : !nonProjectModule;
+              },
               use: dev
                 ? ([
                     { loader: 'style-loader', options: zen.createConfig(builder, 'style', {}) },
