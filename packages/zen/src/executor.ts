@@ -1081,12 +1081,12 @@ const execute = (cmd: string, argv: any, builders: Builders, zen: Zen) => {
     if (cmd === 'exp') {
       startExp(zen, builders, zenLogger);
     } else if (cmd === 'test') {
-      // TODO: Remove this in 0.5.x
+      // TODO: Remove this in 0.2.x
       let builder;
       for (const name of Object.keys(builders)) {
         builder = builders[name];
         if (builder.roles.indexOf('test') >= 0) {
-          const testArgs = ['--webpack-config', builder.require.resolve('zen/webpack.config.js')];
+          const testArgs = ['--webpack-config', builder.require.resolve('@larix/zen/webpack.config.js')];
           if (builder.stack.hasAny('react')) {
             const majorVer = builder.require('react/package.json').version.split('.')[0];
             const reactVer = majorVer >= 16 ? majorVer : 15;
