@@ -6,4 +6,5 @@ lib
 package-lock.json
 .idea
 .npmrc
+*.log
 
