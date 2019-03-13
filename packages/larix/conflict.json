@@ -1,0 +1,18 @@
+{
+  "name": "@gqlapp/module-common",
+  "version": "0.1.0",
+  "prefab": "modules/module/common",
+  "dependencies": {
+    "fractal-objects": "^0.10.0"
+<<<<<<< modules/module/common/package.json
+  },
+  "peerDependencies": {
+    "i18next": "0.1.0"
+||||||| /home/victor/.cache/larix/npm-@gqlapp-module-common-0.0.1/package.json
+=======
+  },
+  "peerDependencies": {
+    "i18next": "*"
+>>>>>>> /home/victor/work/larix/node_modules/@gqlapp/module-common/package.json
+  }
+}

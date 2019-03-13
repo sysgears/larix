@@ -6,32 +6,56 @@ import * as tar from 'tar-stream';
 
 import { getPrefabCacheDir } from '../cache';
 
-const downloadPrefab = async (name, version, registry): Promise<string> => {
-  const prefabCacheDir = getPrefabCacheDir(name, version);
+interface DownloadPrefabOptions {
+  name: string;
+  version: string;
+  registry: string;
+  cacheDir: string;
+}
+
+const downloadPrefab = async (options: DownloadPrefabOptions): Promise<string> => {
+  const { name, version, registry, cacheDir } = options;
+  const prefabCacheDir = path.join(cacheDir, getPrefabCacheDir(name, version));
   if (!fs.existsSync(prefabCacheDir)) {
     fs.mkdirpSync(prefabCacheDir);
-    const metadata = (await axios.get(registry + name)).data.versions[version];
+
+    let metadata;
+    try {
+      metadata = (await axios.get(registry + name)).data.versions[version];
+    } catch (e) {
+      e.message = `while fetching ${registry + name} ${e.message}`;
+      throw e;
+    }
     fs.writeFileSync(path.join(prefabCacheDir, '.larix-metadata.json'), JSON.stringify(metadata));
     const tgz = (await axios.get(metadata.dist.tarball, { responseType: 'arraybuffer' })).data;
     const tarballPath = path.join(prefabCacheDir, '.larix-tarball.tgz');
     fs.writeFileSync(tarballPath, tgz);
-    const extract = tar.extract();
-    extract.on('entry', (header, stream, next) => {
-      const entryName = header.name.substring(header.name.search(/[\/\\]/) + 1);
-      fs.mkdirpSync(path.join(prefabCacheDir, path.dirname(entryName)));
+    return new Promise(resolve => {
+      const extract = tar.extract();
+      extract.on('entry', (header, stream, next) => {
+        const entryName = header.name.substring(header.name.search(/[\/\\]/) + 1);
+        const entryDir = path.join(prefabCacheDir, path.dirname(entryName));
+        fs.mkdirpSync(entryDir);
 
-      stream.on('end', () => {
-        next();
+        stream.on('end', () => {
+          next();
+        });
+
+        const entryPath = path.join(prefabCacheDir, entryName);
+        stream.pipe(fs.createWriteStream(entryPath));
       });
 
-      stream.pipe(fs.createWriteStream(path.join(prefabCacheDir, name)));
-    });
+      extract.on('finish', () => {
+        resolve(prefabCacheDir);
+      });
 
-    fs.createReadStream(tarballPath)
-      .pipe(gunzip())
-      .pipe(extract);
+      fs.createReadStream(tarballPath)
+        .pipe(gunzip())
+        .pipe(extract);
+    });
+  } else {
+    return prefabCacheDir;
   }
-  return prefabCacheDir;
 };
 
 export { downloadPrefab };

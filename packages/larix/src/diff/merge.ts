@@ -1,23 +1,11 @@
 import { exec } from 'child_process';
-import { ENGINE_METHOD_NONE } from 'constants';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as tmp from 'tmp';
+import { getDirFiles } from '../fs/getDirFiles';
 
 const DIFF3_PROCESS_LIMIT = 32;
-
-const getDirFiles = (dir: string, relDir?: string): string[] =>
-  fs.readdirSync(dir).reduce((res: string[], file: string) => {
-    if (file.indexOf('.larix') !== 0) {
-      if (fs.statSync(path.join(dir, file)).isDirectory()) {
-        res.push(...getDirFiles(path.join(dir, file), relDir ? path.join(relDir, file) : file));
-      } else {
-        res.push(relDir ? path.join(relDir, file) : file);
-      }
-    }
-    return res;
-  }, []);
 
 interface MaybeConflictingContents {
   unified?: string;
@@ -70,6 +58,7 @@ const getConflictingHunks = (lines: string[]): ConflictingHunk[] => {
       }
     }
   }
+  pushAndResetCurHunk();
   return hunks;
 };
 
@@ -78,6 +67,7 @@ export const readMaybeConflictedFile = (filePath: string): MaybeConflictingConte
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const lines = fileContents.split(/\r\n|\r|\n/);
   const hunks = getConflictingHunks(lines);
+  console.log('hunks:', hunks);
   for (const hunk of hunks) {
     if (hunk.mine.length > 0 || hunk.yours.length > 0) {
       if (contents.unified !== undefined) {
@@ -85,11 +75,11 @@ export const readMaybeConflictedFile = (filePath: string): MaybeConflictingConte
         contents.yours = contents.unified;
         delete contents.unified;
       }
-      contents.mine += hunk.mine.join(os.EOL);
-      contents.yours += hunk.yours.join(os.EOL);
+      contents.mine = (contents.mine || '') + hunk.mine.join(os.EOL);
+      contents.yours = (contents.yours || '') + hunk.yours.join(os.EOL);
     } else {
       if (contents.mine === undefined) {
-        contents.unified = contents.unified + hunk.unified.join(os.EOL);
+        contents.unified = (contents.unified || '') + hunk.unified.join(os.EOL);
       } else {
         contents.mine += hunk.unified.join(os.EOL);
         contents.yours += hunk.unified.join(os.EOL);
@@ -158,4 +148,19 @@ const merge = async (mineDir: string, oldDir: string, yourDir: string) => {
   }
 };
 
-export { merge };
+interface Versions {
+  baseVersion: string;
+  newVersion: string;
+}
+
+const parseVersionsFromMaybeConflictingFile = (filePath: string): Versions => {
+  const result: Versions = { baseVersion: undefined, newVersion: undefined };
+  const fileContents = fs.readFileSync(filePath, 'utf8');
+  const hasConflics = new RegExp('^' + CONFLICT_MINE + ' ', 'm').test(fileContents);
+  if (hasConflics) {
+  }
+
+  return result;
+};
+
+export { merge, parseVersionsFromMaybeConflictingFile };

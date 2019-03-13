@@ -20,7 +20,7 @@ const removeDirAndEmptyDirsUp = moduleDir => {
   } while (dir.length > 0);
 };
 
-export const removePrefabs = async (packageNames, registry) => {
+export const removePrefabs = async (packageNames: string[], registry: string, cacheDir: string) => {
   const nodeModulesDirs = findNodeModulesDirs();
   const allPrefabs = Object.keys(getDependentPrefabs('package.json', nodeModulesDirs));
   const prefabsAfterRemoval = Object.keys(getDependentPrefabs('package.json', packageNames));
@@ -35,7 +35,7 @@ export const removePrefabs = async (packageNames, registry) => {
     if (prefabDir) {
       const pkgJson = JSON.parse(fs.readFileSync(path.join(prefabDir, 'package.json'), 'utf8'));
       const realDir = fs.realpathSync(prefabDir);
-      const prefabCacheDir = await downloadPrefab(pkgJson.name, pkgJson.version, registry);
+      const prefabCacheDir = await downloadPrefab({ name: pkgJson.name, version: pkgJson.version, registry, cacheDir });
       const patch = patchToStr(createPatch(prefabCacheDir, realDir), pkgJson.version);
       try {
         removeDirAndEmptyDirsUp(realDir);

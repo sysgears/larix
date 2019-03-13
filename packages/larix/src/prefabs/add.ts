@@ -7,19 +7,25 @@ import { findNodeModule, findNodeModulesDirs } from '../resolve';
 import { downloadPrefab } from './download';
 import { getDependentPrefabs } from './get';
 
-export const addPrefabs = async registry => {
+export const addPrefabs = async (registry: string, cacheDir: string) => {
   const nodeModulesDirs = findNodeModulesDirs();
   const prefabs = getDependentPrefabs('package.json', nodeModulesDirs);
   for (const key of Object.keys(prefabs)) {
-    const prefab = prefabs[key].prefab;
+    const prefab = prefabs[key].larix || prefabs[key].prefab;
     const prefabInstallDir = findNodeModule(key, nodeModulesDirs);
     const dir = fs.realpathSync(prefabInstallDir);
     if (fs.existsSync(path.join(prefab, 'package.json'))) {
       const nodeModulesPkgJson = JSON.parse(fs.readFileSync(path.join(prefabInstallDir, 'package.json'), 'utf8'));
       const appPkgJson = readMaybeConflictedFile(path.join(prefab, 'package.json'));
-      const appModulePkgJson = JSON.parse();
+      console.log(appPkgJson);
+      const appModulePkgJson = JSON.parse(appPkgJson.unified ? appPkgJson.unified : appPkgJson.yours);
       if (nodeModulesPkgJson.version !== appModulePkgJson.version) {
-        const oldPrefabDir = await downloadPrefab(nodeModulesPkgJson.name, appModulePkgJson.version, registry);
+        const oldPrefabDir = await downloadPrefab({
+          name: nodeModulesPkgJson.name,
+          version: appModulePkgJson.version,
+          registry,
+          cacheDir
+        });
         await merge(prefab, oldPrefabDir, prefabInstallDir);
       }
       fs.removeSync(prefabInstallDir);

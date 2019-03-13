@@ -34,9 +34,9 @@ export const createPatch = (file1: string, file2: string, basedir1?: string, bas
         try {
           stat2 = fs.statSync(filePath2);
         } catch (e) {}
-        if (!stat1 || !stat2) {
-          console.log(filePath1, filePath2);
-        }
+        // if (!stat1 || !stat2) {
+        //   console.log(filePath1, filePath2);
+        // }
         const text1 = stat1 && stat1.isFile() ? fs.readFileSync(filePath1, 'utf8') : '';
         const text2 = stat2 && stat2.isFile() ? fs.readFileSync(filePath2, 'utf8') : '';
         const mtime1 = stat1 ? getTimestamp(fs.statSync(filePath1).mtime) : '';
@@ -44,7 +44,7 @@ export const createPatch = (file1: string, file2: string, basedir1?: string, bas
         const relPath1 = path.relative(basedir1 || file1, filePath1);
         const relPath2 = path.relative(basedir2 || file2, filePath2);
         patch[relPath2] = diff.structuredPatch(relPath1, relPath2, text1, text2, mtime1, mtime2);
-        if (stat1.isDirectory() || stat2.isDirectory()) {
+        if ((stat1 && stat1.isDirectory()) || (stat2 && stat2.isDirectory())) {
           patch = { ...patch, ...createPatch(filePath1, filePath2, file1, file2) };
         }
       }
@@ -87,7 +87,6 @@ export const parsePatch = (contents: string, options?: any): ParsedPatch => {
 
 export const patchToStr = (patch: Patch | diff.IUniDiff, pkgVersion: string): string => {
   if (!isPatchObj(patch)) {
-    console.log(JSON.stringify(patch.hunks));
     const lines = [];
     lines.push('--- ' + patch.oldFileName + '\t' + patch.oldHeader + '\t' + pkgVersion);
     lines.push('+++ ' + patch.newFileName + '\t' + patch.newHeader);
@@ -104,4 +103,10 @@ export const patchToStr = (patch: Patch | diff.IUniDiff, pkgVersion: string): st
     }
     return result;
   }
+};
+
+export const parsePkgVersionFromPatch = (patchPath: string): string => {
+  const contents = fs.readFileSync(patchPath, 'utf8');
+  const matches = contents.match(/^---[^\t]+\t[^\t]+\t(.+)$/m);
+  return matches && matches[1];
 };

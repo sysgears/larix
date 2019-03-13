@@ -1,0 +1,6 @@
+--- index.ts	2019-03-04 09:11:41.081	0.1.0
++++ index.ts	2019-03-04 09:11:23.724
+@@ -1,2 +1,3 @@
+ export { default } from './ServerModule';
++// Comment 2
+ export * from './ServerModule';

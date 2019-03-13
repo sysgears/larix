@@ -9,7 +9,8 @@ const getPrefabs = (depList, nodeModulesDirs: string[]) => {
     const modulePath = findNodeModule(dep, nodeModulesDirs);
     if (modulePath) {
       const pkg = JSON.parse(fs.readFileSync(path.join(modulePath, 'package.json'), 'utf8'));
-      if (pkg.prefab) {
+      const prefab = pkg.prefab || pkg.larix;
+      if (prefab) {
         prefabs = { ...prefabs, [dep]: pkg, ...getPrefabs(Object.keys(pkg.dependencies || {}), nodeModulesDirs) };
       }
     }

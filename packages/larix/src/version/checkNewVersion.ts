@@ -3,12 +3,10 @@ import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { CACHE_DIR } from '../cache';
-
 const ONE_HOUR = 3600 * 1000;
 
-export default async (registry: string): Promise<void> => {
-  const cacheConfigPath = path.join(CACHE_DIR, 'larix.json');
+export default async (registry: string, cacheDir: string): Promise<void> => {
+  const cacheConfigPath = path.join(cacheDir, 'larix.json');
   const json = fs.existsSync(cacheConfigPath) ? JSON.parse(fs.readFileSync(cacheConfigPath, 'utf8')) : {};
   json.lastUpdateCheck = json.lastUpdateCheck || 0;
   const time = new Date().getTime();
