@@ -41,12 +41,12 @@ export default class MochProject {
         const entryDir = path.join(installDir, path.dirname(entryName));
         fs.mkdirpSync(entryDir);
 
-        stream.on('end', () => {
+        const entryPath = path.join(installDir, entryName);
+        const writeStream = fs.createWriteStream(entryPath);
+        stream.pipe(writeStream);
+        writeStream.on('close', () => {
           next();
         });
-
-        const entryPath = path.join(installDir, entryName);
-        stream.pipe(fs.createWriteStream(entryPath));
       });
 
       extract.on('finish', () => {

@@ -9,21 +9,21 @@ import { getPrefabCacheDir } from '../cache';
 interface DownloadPrefabOptions {
   name: string;
   version: string;
-  registry: string;
+  registryUrl: string;
   cacheDir: string;
 }
 
 const downloadPrefab = async (options: DownloadPrefabOptions): Promise<string> => {
-  const { name, version, registry, cacheDir } = options;
+  const { name, version, registryUrl, cacheDir } = options;
   const prefabCacheDir = path.join(cacheDir, getPrefabCacheDir(name, version));
   if (!fs.existsSync(prefabCacheDir)) {
     fs.mkdirpSync(prefabCacheDir);
 
     let metadata;
     try {
-      metadata = (await axios.get(registry + name)).data.versions[version];
+      metadata = (await axios.get(registryUrl + name)).data.versions[version];
     } catch (e) {
-      e.message = `while fetching ${registry + name} ${e.message}`;
+      e.message = `while fetching ${registryUrl + name} ${e.message}`;
       throw e;
     }
     fs.writeFileSync(path.join(prefabCacheDir, '.larix-metadata.json'), JSON.stringify(metadata));

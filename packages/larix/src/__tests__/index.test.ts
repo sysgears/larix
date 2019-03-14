@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import { getDirFiles } from '../fs';
-import { addPrefabs } from '../prefabs';
+import { addPrefabs, removePrefabs } from '../prefabs';
 import { downloadPrefab } from '../prefabs/download';
 import MockProject from './MochProject';
 import MockRegistry from './MockRegistry';
@@ -11,6 +11,24 @@ tmp.setGracefulCleanup();
 
 describe('larix', () => {
   let registry;
+  let cacheDir;
+  let project;
+
+  const createPatch = async () => {
+    await registry.publish({
+      'index.ts': `console.log('Hello!');`,
+      'package.json': `{"name": "@gqlapp/core-server-ts", "larix": "modules/core", "version": "0.0.1"}`
+    });
+    await project.install('@gqlapp/core-server-ts@0.0.1', registry.url);
+    await addPrefabs({ projectRoot: project.dir, registryUrl: registry.url, cacheDir });
+    fs.writeFileSync(path.join(project.dir, 'modules/core/index.ts'), `// Comment\nconsole.log('Hello!');`);
+    await removePrefabs({
+      packageNames: ['@gqlapp/core-server-ts'],
+      projectRoot: project.dir,
+      registryUrl: registry.url,
+      cacheDir
+    });
+  };
 
   beforeAll(async () => {
     registry = new MockRegistry();
@@ -18,6 +36,8 @@ describe('larix', () => {
   });
 
   beforeEach(() => {
+    cacheDir = tmp.dirSync({ unsafeCleanup: true }).name;
+    project = new MockProject('my-proj');
     registry.clear();
   });
 
@@ -34,7 +54,7 @@ describe('larix', () => {
     const dir = await downloadPrefab({
       name: '@gqlapp/module-server-ts',
       version: '0.0.1',
-      registry: registry.url,
+      registryUrl: registry.url,
       cacheDir: tmpDir.name
     });
     const files = fs.readdirSync(dir);
@@ -49,7 +69,6 @@ describe('larix', () => {
       'index.ts': `console.log('Hello!');`,
       'package.json': `{"name": "@gqlapp/module-server-ts", "version": "0.0.1"}`
     });
-    const project = new MockProject('my-proj');
     await project.install('@gqlapp/module-server-ts@0.0.1', registry.url);
     const files = getDirFiles(project.dir);
     const pkgJson = JSON.parse(fs.readFileSync(path.join(project.dir, 'package.json'), 'utf8'));
@@ -60,15 +79,37 @@ describe('larix', () => {
   });
 
   it('should be able to install a prefab', async () => {
-    const cacheDir = tmp.dirSync({ unsafeCleanup: true }).name;
     await registry.publish({
       'index.ts': `console.log('Hello!');`,
       'package.json': `{"name": "@gqlapp/core-server-ts", "larix": "modules/core", "version": "0.0.1"}`
     });
-    const project = new MockProject('my-proj');
     await project.install('@gqlapp/core-server-ts@0.0.1', registry.url);
-    await addPrefabs(registry.url, cacheDir);
+    await addPrefabs({ projectRoot: project.dir, registryUrl: registry.url, cacheDir });
     const files = getDirFiles(project.dir);
-    console.log(files);
+    expect(files).toContain('modules/core/index.ts');
+    expect(files).toContain('modules/core/package.json');
+  });
+
+  it('should be able to remove a prefab and save changes in a patch', async () => {
+    await registry.publish({
+      'index.ts': `console.log('Hello!');`,
+      'package.json': `{"name": "@gqlapp/core-server-ts", "larix": "modules/core", "version": "0.0.1"}`
+    });
+    await project.install('@gqlapp/core-server-ts@0.0.1', registry.url);
+    await addPrefabs({ projectRoot: project.dir, registryUrl: registry.url, cacheDir });
+    fs.writeFileSync(path.join(project.dir, 'modules/core/index.ts'), `// Comment\nconsole.log('Hello!');`);
+    await removePrefabs({
+      packageNames: ['@gqlapp/core-server-ts'],
+      projectRoot: project.dir,
+      registryUrl: registry.url,
+      cacheDir
+    });
+    const files = getDirFiles(project.dir);
+    expect(files).not.toContain('node_modules/@gqlapp/module-server-ts/index.ts');
+    expect(files).toContain('modules/core/core.patch');
+  });
+
+  it('should be able to determine version from created patch', async () => {
+    await createPatch();
   });
 });
