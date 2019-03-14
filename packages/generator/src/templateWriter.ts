@@ -50,7 +50,7 @@ const writeWsPkgJson = (files: TemplateFilePaths, writeFile: WriteFile) => {
   if (dirRootSet.length > 1 && dirRootSet[0].dstRoot === '.') {
     const wsPkg = JSON.parse(fs.readFileSync(path.join(dirRootSet[0].srcRoot, relPath), 'utf8'));
     for (const dirRoots of dirRootSet) {
-      const pkg = JSON.parse(mergePkgJson(path.join(dirRoots.srcRoot, relPath), __dirname + '/../templates/presets/'));
+      const pkg = JSON.parse(mergePkgJson(path.join(dirRoots.srcRoot, relPath), dirRoots.srcRoot + '/../presets/'));
       pkg.name += '-' + path.basename(dirRoots.srcRoot);
       for (const section of ['devDependencies', 'resolutions']) {
         if (pkg[section]) {
@@ -68,7 +68,7 @@ const writeWsPkgJson = (files: TemplateFilePaths, writeFile: WriteFile) => {
     writeFile(relPath, JSON.stringify(wsPkg, null, 2));
   } else {
     const pkg = JSON.parse(
-      mergePkgJson(path.join(dirRootSet[0].srcRoot, relPath), __dirname + '/../templates/presets/')
+      mergePkgJson(path.join(dirRootSet[0].srcRoot, relPath), dirRootSet[0].srcRoot + '/../presets/')
     );
     writeFile(relPath, JSON.stringify(pkg, null, 2));
   }
@@ -114,7 +114,7 @@ export const templateWriter: TemplateWriter = (files: TemplateFilePaths, writeFi
       for (const dirRoots of files[relPath]) {
         const contents =
           path.basename(relPath) === 'package.json'
-            ? mergePkgJson(path.join(dirRoots.srcRoot, relPath), __dirname + '/../templates/presets/')
+            ? mergePkgJson(path.join(dirRoots.srcRoot, relPath), dirRoots.srcRoot + '/../presets/')
             : fs.readFileSync(path.join(dirRoots.srcRoot, relPath), 'utf8');
         writeFile(path.join(dirRoots.dstRoot, relPath), contents, { isWorkspace });
       }
