@@ -4,7 +4,9 @@
   "scripts": {
     "build": "lerna run -- build",
     "clean": "lerna run -- clean",
-    "test": "lerna run -- test",
+    "tests": "jest",
+    "tests:watch": "jest --watch",
+    "test": "yarn tests && yarn lint",
     "lint": "lerna run -- lint",
     "watch": "lerna run --parallel -- watch",
     "predeploy": "yarn build && yarn test",
@@ -41,5 +43,18 @@
     "printWidth": 120,
     "singleQuote": true,
     "parser": "babylon"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ],
+    "testEnvironment": "node"
   }
 }
