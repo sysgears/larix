@@ -103,7 +103,7 @@ const writeTsJson = (relPath: string, files: TemplateFilePaths, writeFile: Write
   }
 };
 
-const templateWriter: TemplateWriter = (files: TemplateFilePaths, writeFile: WriteFile) => {
+export const templateWriter: TemplateWriter = (files: TemplateFilePaths, writeFile: WriteFile) => {
   const isWorkspace = files['package.json'].length > 1 && files['package.json'][0].dstRoot === '.';
   writeWsGitignore(files, writeFile);
   writeWsPkgJson(files, writeFile);
