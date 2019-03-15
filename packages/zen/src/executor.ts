@@ -885,42 +885,49 @@ const startExpoServer = async (zen: Zen, builder: Builder, projectRoot: string, 
   });
 };
 
-const startExpoProject = async (zen: Zen, builder: Builder, logger: any) => {
+const launchExpoApp = async (builder: Builder, platform: string, logger) => {
   const { UrlUtils, Android, Simulator } = builder.require('xdl');
   const qr = builder.require('qrcode-terminal');
+
+  const projectRoot = path.join(builder.require.cwd, '.expo', platform);
+
+  const address = await UrlUtils.constructManifestUrlAsync(projectRoot);
+  const localAddress = await UrlUtils.constructManifestUrlAsync(projectRoot, {
+    hostType: 'localhost'
+  });
+  logger.info(`Expo address for ${platform}, Local: ${localAddress}, LAN: ${address}`);
+  logger.info(
+    "To open this app on your phone scan this QR code in Expo Client (if it doesn't get started automatically)"
+  );
+  qr.generate(address, code => {
+    logger.info('\n' + code);
+  });
+  if (!isDocker()) {
+    if (platform === 'android' || platform === 'all') {
+      const { success, error } = await Android.openProjectAsync(projectRoot);
+
+      if (!success) {
+        logger.error(error.message);
+      }
+    }
+    if (platform === 'ios' || platform === 'all') {
+      const { success, msg } = await Simulator.openUrlInSimulatorSafeAsync(localAddress);
+
+      if (!success) {
+        logger.error('Failed to start Simulator: ', msg);
+      }
+    }
+  }
+};
+
+const startExpoProject = async (zen: Zen, builder: Builder, logger: any) => {
   const platform = builder.stack.platform;
 
   try {
     const projectRoot = path.join(builder.require.cwd, '.expo', platform);
     setupExpoDir(zen, builder, projectRoot, platform);
     await startExpoServer(zen, builder, projectRoot, builder.config.devServer.port);
-
-    const address = await UrlUtils.constructManifestUrlAsync(projectRoot);
-    const localAddress = await UrlUtils.constructManifestUrlAsync(projectRoot, {
-      hostType: 'localhost'
-    });
-    logger.info(`Expo address for ${platform}, Local: ${localAddress}, LAN: ${address}`);
-    logger.info(
-      "To open this app on your phone scan this QR code in Expo Client (if it doesn't get started automatically)"
-    );
-    qr.generate(address, code => {
-      logger.info('\n' + code);
-    });
-    if (!isDocker()) {
-      if (platform === 'android') {
-        const { success, error } = await Android.openProjectAsync(projectRoot);
-
-        if (!success) {
-          logger.error(error.message);
-        }
-      } else if (platform === 'ios') {
-        const { success, msg } = await Simulator.openUrlInSimulatorSafeAsync(localAddress);
-
-        if (!success) {
-          logger.error('Failed to start Simulator: ', msg);
-        }
-      }
-    }
+    await launchExpoApp(builder, platform, logger);
   } catch (e) {
     logger.error(e.stack);
   }
@@ -942,12 +949,15 @@ const allocateExpoPorts = async expoPlatforms => {
   }
 };
 
-const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Builders, logger) => {
+const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Builders, expCmd: string, logger) => {
   const connect = mainBuilder.require('connect');
   const mime = mainBuilder.require('mime', mainBuilder.require.resolve('webpack-dev-middleware'));
   const compression = mainBuilder.require('compression');
   const statusPageMiddleware = mainBuilder.require('react-native/local-cli/server/middleware/statusPageMiddleware.js');
   const { UrlUtils } = mainBuilder.require('xdl');
+
+  mime.define({ 'application/javascript': ['bundle'] }, true);
+  mime.define({ 'application/json': ['assets'] }, true);
 
   logger.info(`Starting Expo prod server`);
   const packagerPort = 3030;
@@ -956,7 +966,9 @@ const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Bui
   app
     .use((req, res, next) => {
       req.path = req.url.split('?')[0];
-      debug(`Prod mobile packager request: ${req.url}`);
+      if (req.path !== '/onchange') {
+        logger.debug(`Prod mobile packager request: http://localhost:${packagerPort}${req.url}`);
+      }
       next();
     })
     .use(statusPageMiddleware)
@@ -972,7 +984,7 @@ const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Bui
             platformFound = true;
             const filePath = builder.buildDir
               ? path.join(builder.buildDir, req.path)
-              : path.join(builder.frontendBuildDir || `build/client`, platform, req.path);
+              : path.join(builder.frontendBuildDir || `build/client`, platform.toString(), req.path);
             if (fs.existsSync(filePath)) {
               res.writeHead(200, { 'Content-Type': mime.lookup ? mime.lookup(filePath) : mime.getType(filePath) });
               fs.createReadStream(filePath).pipe(res);
@@ -1008,10 +1020,12 @@ const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Bui
 
   const projectRoot = path.join(path.resolve('.'), '.expo', 'all');
   await startExpoServer(zen, mainBuilder, projectRoot, packagerPort);
-  const localAddress = await UrlUtils.constructManifestUrlAsync(projectRoot, {
-    hostType: 'localhost'
-  });
-  logger.info(`Expo server running on address: ${localAddress}`);
+  if (expCmd === 'server') {
+    await launchExpoApp(mainBuilder, 'all', logger);
+  } else {
+    const address = await UrlUtils.constructManifestUrlAsync(projectRoot);
+    logger.info(`Expo server running on LAN url: ${address}`);
+  }
 };
 
 const startExp = async (zen: Zen, builders: Builders, logger) => {
@@ -1031,7 +1045,7 @@ const startExp = async (zen: Zen, builders: Builders, logger) => {
   setupExpoDir(zen, mainBuilder, projectRoot, 'all');
   const expIdx = process.argv.indexOf('exp');
   if (['ba', 'bi', 'build:android', 'build:ios', 'publish', 'p', 'server'].indexOf(process.argv[expIdx + 1]) >= 0) {
-    await startExpoProdServer(zen, mainBuilder, builders, logger);
+    await startExpoProdServer(zen, mainBuilder, builders, process.argv[expIdx + 1], logger);
   }
   if (process.argv[expIdx + 1] !== 'server') {
     const exp = spawn(
