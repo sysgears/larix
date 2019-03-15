@@ -46,7 +46,7 @@ interface TemplateMap {
   [id: string]: Template;
 }
 
-const run = async (templateMap: TemplateMap, templateWriter: TemplateWriter, args: any) => {
+const run = async (templateMap: TemplateMap, templateWriter: TemplateWriter, args: any): Promise<ProjectInfo> => {
   try {
     const [appName, argTemplateId] = args._[0].split('@');
     validateAppName(appName);
@@ -58,7 +58,7 @@ const run = async (templateMap: TemplateMap, templateWriter: TemplateWriter, arg
     if (!template) {
       throw new GeneratorError(`Template ${chalk.blueBright('@' + templateId)} not found`);
     }
-    await generateApp(appName, template, templateWriter);
+    return await generateApp(appName, templateId, template, templateWriter);
   } catch (e) {
     if (e.name === 'GeneratorError') {
       console.error(e.message);
@@ -68,7 +68,17 @@ const run = async (templateMap: TemplateMap, templateWriter: TemplateWriter, arg
   }
 };
 
-export default (templates: Template[], templateWriter: TemplateWriter, command: string, argv: string[]) => {
+export interface ProjectInfo {
+  appName: string;
+  templateId: string;
+}
+
+export default (
+  templates: Template[],
+  templateWriter: TemplateWriter,
+  command: string,
+  argv: string[]
+): Promise<ProjectInfo> => {
   const templateList = templates.map(template => ({ ...template, id: template.title.split(':')[0].substring(1) }));
   const templateMap = templateList.reduce((result, item) => ({ ...result, [item.id]: item }), {});
 
@@ -76,11 +86,12 @@ export default (templates: Template[], templateWriter: TemplateWriter, command: 
 
   if (args.help) {
     showUsage(command);
+    process.exit(0);
   } else if (args._.length < 1) {
     showUsage(command);
     console.log(`${chalk.green('app_name')} argument is required`);
     process.exit(1);
   } else {
-    run(templateMap, templateWriter, args);
+    return run(templateMap, templateWriter, args);
   }
 };

@@ -1,4 +1,5 @@
 import generate, { templateWriter } from '@larix/generator';
+import chalk from 'chalk';
 import 'source-map-support/register';
 
 import templates from './templates';
@@ -12,4 +13,10 @@ process
     process.exit(1);
   });
 
-generate(templates, templateWriter, 'yarn create apollo-app', process.argv);
+(async () => {
+  const { appName } = await generate(templates, templateWriter, 'yarn create apollo-app', process.argv);
+
+  console.log(`App ${chalk.green(appName)} generated successfully! Execute commands below to start it:\n`);
+  console.log(chalk.yellow(`cd ${appName}`));
+  console.log(chalk.yellow(`yarn start`));
+})();

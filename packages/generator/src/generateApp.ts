@@ -1,11 +1,10 @@
-import chalk from 'chalk';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import { camelize } from 'humps';
 import * as mustache from 'mustache';
 import * as path from 'path';
 
-import { Template, TemplateFilePaths } from './index';
+import { ProjectInfo, Template, TemplateFilePaths } from './index';
 
 const IS_WINDOWS = /^win/.test(process.platform);
 
@@ -26,7 +25,12 @@ export type TemplateWriter = (
 
 export type WriteFile = (filePath: string, contents: string, vars?: any) => void;
 
-export default async (appName: string, template: Template, templateWriter: TemplateWriter) => {
+export default async (
+  appName: string,
+  templateId: string,
+  template: Template,
+  templateWriter: TemplateWriter
+): Promise<ProjectInfo> => {
   mkdirp(appName);
 
   const writeFile: WriteFile = (filePath, contents, vars) => {
@@ -71,7 +75,5 @@ export default async (appName: string, template: Template, templateWriter: Templ
     });
   }
 
-  console.log(`App ${chalk.green(appName)} generated successfully! Execute commands below to start it:\n`);
-  console.log(chalk.yellow(`cd ${appName}`));
-  console.log(chalk.yellow(`yarn start`));
+  return { appName, templateId };
 };
