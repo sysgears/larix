@@ -26,7 +26,7 @@ const registerBabel = (builder: Builder): void => {
         builder.require.resolve(reactNativePreset),
         builder.require.resolve(isBabel7 ? '@babel/preset-flow' : 'babel-preset-flow')
       ],
-      ignore: [/node_modules\/(?!haul|react-native)/],
+      ignore: [/.*[\/\\]node_modules[\/\\](?!haul|react-native)/],
       retainLines: true,
       sourceMaps: 'inline'
     });
