@@ -300,8 +300,6 @@ const createConfig = (builder: Builder, zen: Zen) => {
       externals: (context, request, callback) => {
         if (
           request.indexOf('webpack') < 0 &&
-          request.indexOf('babel-polyfill') < 0 &&
-          request.indexOf('@babel/polyfill') < 0 &&
           request.indexOf('mochapack') < 0 &&
           request.indexOf('mocha-webpack') < 0 &&
           !request.startsWith('.')
