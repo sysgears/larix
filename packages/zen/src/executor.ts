@@ -6,7 +6,6 @@ import * as Debug from 'debug';
 import * as detectPort from 'detect-port';
 import * as fs from 'fs';
 import * as http from 'http';
-import * as humps from 'humps';
 import * as ip from 'ip';
 import * as isDocker from 'is-docker';
 import * as _ from 'lodash';
@@ -19,6 +18,7 @@ import * as url from 'url';
 import { ConcatSource, RawSource } from 'webpack-sources';
 
 import { Builder, Builders } from './Builder';
+import getDllName from './getDllName';
 import liveReloadMiddleware from './plugins/react-native/liveReloadMiddleware';
 import symbolicateMiddleware from './plugins/react-native/symbolicateMiddleware';
 import { hookAsync, hookSync } from './webpackHooks';
@@ -323,7 +323,7 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
   let vendorMap;
 
   if (builder.webpackDll && builder.child) {
-    const name = `vendor_${humps.camelize(builder.name)}`;
+    const name = getDllName(builder);
     const jsonPath = path.join(builder.dllBuildDir, `${name}_dll.json`);
     const json = JSON.parse(fs.readFileSync(path.resolve('./' + jsonPath)).toString());
 
@@ -670,7 +670,7 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
 };
 
 const isDllValid = (zen, builder, logger): boolean => {
-  const name = `vendor_${humps.camelize(builder.name)}`;
+  const name = getDllName(builder);
   try {
     const hashesPath = path.join(builder.dllBuildDir, `${name}_dll_hashes.json`);
     if (!fs.existsSync(hashesPath)) {
@@ -721,7 +721,7 @@ const buildDll = (zen: Zen, builder: Builder) => {
   const webpack = builder.require('webpack');
   const config = builder.child.config;
   return new Promise(done => {
-    const name = `vendor_${humps.camelize(builder.name)}`;
+    const name = getDllName(builder);
     const logger = minilog(`${config.name}-webpack`);
     if (builder.silent) {
       logger.suggest.deny(/.*/, 'debug');

@@ -29,18 +29,23 @@ export default class ConfigReader {
     const { filePath, inferedConfig, builderOverrides } = options;
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       const dir = filePath;
+      let derivedConfig = {};
+      if (fs.existsSync(path.join(dir, 'package.json'))) {
+        derivedConfig = inferConfig(path.join(dir, 'package.json'));
+      }
       const candidates = ['.zenrc.json', '.zenrc', '.zenrc.js', 'package.json'];
       for (const fileName of candidates) {
         const configPath = path.join(dir, fileName);
-        const derivedConfig = inferConfig(path.join(dir, 'package.json'));
-        try {
-          const builders = this.readConfig({ filePath: configPath, inferedConfig: derivedConfig, builderOverrides });
-          if (builders) {
-            return builders;
+        if (fs.existsSync(configPath)) {
+          try {
+            const builders = this.readConfig({ filePath: configPath, inferedConfig: derivedConfig, builderOverrides });
+            if (builders) {
+              return builders;
+            }
+          } catch (e) {
+            e.message = `while processing ${configPath}: ${e.message}`;
+            throw e;
           }
-        } catch (e) {
-          e.message = `while processing ${configPath}: ${e.message}`;
-          throw e;
         }
       }
     } else {
@@ -74,8 +79,9 @@ export default class ConfigReader {
   }
 
   private _createBuilders(filePath: string, config: any, derivedConfig: any, builderOverrides: any): Builders {
-    config = config || derivedConfig;
+    config = config || {};
     config.options = config.options || {};
+    config.builders = this.zen.merge(derivedConfig.builders, config.builders);
 
     const relativePath = path.relative(this.zen.cwd, path.dirname(filePath));
     const builders: Builders = {};

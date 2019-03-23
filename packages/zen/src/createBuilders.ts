@@ -115,11 +115,16 @@ const createBuilders = ({
       continue;
     }
 
-    builder.enabled =
-      (builder.enabled !== false && !argv.d) ||
-      (builder.enabled !== false && argv.d && ![].concat(argv.d).some(regex => new RegExp(regex).test(builderId))) ||
-      (builder.enabled === false && argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builderId))) ||
-      builder.name === builderName;
+    builder.enabled = builder.enabled !== false;
+    if (argv.d && [].concat(argv.d).some(regex => new RegExp(regex).test(builderId))) {
+      builder.enabled = false;
+    }
+    if (
+      (argv.e && [].concat(argv.e).some(regex => new RegExp(regex).test(builderId))) ||
+      builder.name === builderName
+    ) {
+      builder.enabled = true;
+    }
 
     if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {
       builder.projectRoot = getProjectRoot(builder);

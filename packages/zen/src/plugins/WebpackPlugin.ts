@@ -1,11 +1,11 @@
 import * as fs from 'fs';
-import * as humps from 'humps';
 import * as ip from 'ip';
 import * as path from 'path';
 import * as url from 'url';
 
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
+import getDllName from '../getDllName';
 import upDirs from '../upDirs';
 import Zen from '../Zen';
 import resolveModule from './shared/resolveModule';
@@ -75,7 +75,7 @@ const createPlugins = (builder: Builder, zen: Zen) => {
   }
 
   if (stack.hasAny('dll')) {
-    const name = `vendor_${humps.camelize(builder.parent.name)}`;
+    const name = getDllName(builder);
     plugins = [
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': `"${buildNodeEnv}"`,
@@ -371,7 +371,7 @@ const createConfig = (builder: Builder, zen: Zen) => {
   }
 
   if (stack.hasAny('dll')) {
-    const name = `vendor_${humps.camelize(builder.parent.name)}`;
+    const name = getDllName(builder);
     config = {
       ...config,
       entry: {
