@@ -2,7 +2,7 @@ export default class Stack {
   public technologies: string[];
   public platform: string;
 
-  constructor(name: string, ...stack: string[]) {
+  constructor(...stack: string[]) {
     this.technologies = stack
       .reduce((acc, tech) => {
         if (!tech) {
@@ -24,7 +24,7 @@ export default class Stack {
       this.platform = 'ios';
     } else {
       throw new Error(
-        `stack should include one of 'server', 'web', 'android', 'ios', stack: ${this.technologies} for builder ${name}`
+        `stack should include 'webpack' and one of 'server', 'web', 'android', 'ios', stack: ${this.technologies}`
       );
     }
   }

@@ -1,7 +1,7 @@
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Zen from '../Zen';
-import { excludeNonProjectModules } from './shared/JSRuleFinder';
+import resolveModule, { ModuleType } from './shared/resolveModule';
 
 const postCssDefaultConfig = (builder: Builder) => {
   return {
@@ -30,9 +30,9 @@ export default class CssProcessorPlugin implements ConfigPlugin {
       if (stack.hasAny('server')) {
         createRule = (ext: string, nodeModules: boolean, ruleList: any[]) => ({
           test: new RegExp(`\\.${ext}$`),
-          exclude: () => {
-            const nonProjectModule = excludeNonProjectModules(builder);
-            return !nodeModules ? nonProjectModule : !nonProjectModule;
+          exclude: modulePath => {
+            const moduleType = resolveModule(builder, modulePath).moduleType;
+            return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
           },
           use: ([
             { loader: 'isomorphic-style-loader', options: zen.createConfig(builder, 'isomorphicStyle', {}) },
@@ -66,9 +66,9 @@ export default class CssProcessorPlugin implements ConfigPlugin {
             }
             return {
               test: new RegExp(`\\.${ext}$`),
-              exclude: () => {
-                const nonProjectModule = excludeNonProjectModules(builder);
-                return !nodeModules ? nonProjectModule : !nonProjectModule;
+              exclude: modulePath => {
+                const moduleType = resolveModule(builder, modulePath).moduleType;
+                return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
               },
               use: dev
                 ? ([
@@ -140,9 +140,9 @@ export default class CssProcessorPlugin implements ConfigPlugin {
             }
             return {
               test: new RegExp(`\\.${ext}$`),
-              exclude: () => {
-                const nonProjectModule = excludeNonProjectModules(builder);
-                return !nodeModules ? nonProjectModule : !nonProjectModule;
+              exclude: modulePath => {
+                const moduleType = resolveModule(builder, modulePath).moduleType;
+                return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
               },
               use: dev
                 ? ([

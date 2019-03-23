@@ -1,8 +1,5 @@
 import { Builder } from '../../Builder';
-import resolveModule from './resolveModule';
-
-export const excludeNonProjectModules = (builder: Builder) => modulePath =>
-  !resolveModule(builder, modulePath).shouldTranspile;
+import resolveModule, { ModuleType } from './resolveModule';
 
 export default class JSRuleFinder {
   public builder: Builder;
@@ -35,7 +32,10 @@ export default class JSRuleFinder {
     if (this.jsRule) {
       throw new Error('js rule already exists!');
     }
-    this.jsRule = { test: /\.js$/, exclude: excludeNonProjectModules(this.builder) };
+    this.jsRule = {
+      test: /\.js$/,
+      exclude: modulePath => resolveModule(this.builder, modulePath).moduleType === ModuleType.NormalNodeModule
+    };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.jsRule);
     return this.jsRule;
   }
@@ -65,7 +65,13 @@ export default class JSRuleFinder {
     if (this.tsRule) {
       throw new Error('ts rule already exists!');
     }
-    this.tsRule = { test: /\.ts$/, exclude: excludeNonProjectModules(this.builder) };
+    this.tsRule = {
+      test: /\.ts$/,
+      exclude: modulePath => {
+        const moduleType = resolveModule(this.builder, modulePath).moduleType;
+        return moduleType === ModuleType.NormalNodeModule || moduleType === ModuleType.TranspiledNodeModule;
+      }
+    };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.tsRule);
     return this.tsRule;
   }

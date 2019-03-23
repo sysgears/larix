@@ -128,11 +128,16 @@ const createBuilders = ({
     if (zen.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {
       const dllBuilder: Builder = { ...builder };
       dllBuilder.name = builder.name + 'Dll';
-      dllBuilder.require = builder.require;
-      dllBuilder.parent = builder;
-      dllBuilder.stack = new Stack(dllBuilder.name, ...dllBuilder.stack.technologies, 'dll');
-      builders[`${builderId.split('[')[0]}[${builder.name}Dll]`] = dllBuilder;
-      builder.child = dllBuilder;
+      try {
+        dllBuilder.require = builder.require;
+        dllBuilder.parent = builder;
+        dllBuilder.stack = new Stack(dllBuilder.name, ...dllBuilder.stack.technologies, 'dll');
+        builders[`${builderId.split('[')[0]}[${builder.name}Dll]`] = dllBuilder;
+        builder.child = dllBuilder;
+      } catch (e) {
+        e.message = `while creating builder '${dllBuilder.name}': ` + e.message;
+        throw e;
+      }
     }
     builders[builderId] = builder;
   }

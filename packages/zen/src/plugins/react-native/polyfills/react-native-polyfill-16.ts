@@ -19,4 +19,3 @@ declare var __DEV__;
 if (!(global as any).self) {
   (global as any).self = global;
 }
-require('react-native/Libraries/Core/InitializeCore.js');

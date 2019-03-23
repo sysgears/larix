@@ -3,9 +3,16 @@ import * as path from 'path';
 
 import { Builder } from '../../Builder';
 
+export enum ModuleType {
+  ProjectSource = 0,
+  ProjectModule = 1,
+  TranspiledNodeModule = 2,
+  NormalNodeModule = 3
+}
+
 interface ResolveResult {
   realPath: string;
-  shouldTranspile: boolean;
+  moduleType: ModuleType;
 }
 
 const resolvePackagesCache: { [pkgPath: string]: ResolveResult } = {};
@@ -24,42 +31,44 @@ export default (builder: Builder, modulePath: string): ResolveResult => {
       const pkgPath = modulePath.substr(0, pkgPathEnd);
       if (resolvePackagesCache[pkgPath] === undefined) {
         const pkgName = pkgPath.substr(idx + 14);
-        let shouldTranspile = KNOWN_RN_PACKAGES.some(regex => regex.test(pkgName));
+        let moduleType: ModuleType = ModuleType.NormalNodeModule;
         let resolvedPath = pkgPath;
-        if (!shouldTranspile) {
-          try {
-            if (fs.lstatSync(pkgPath).isSymbolicLink()) {
-              const realPath = fs.realpathSync(pkgPath);
-              resolvedPath = realPath;
-              shouldTranspile = realPath.indexOf(builder.projectRoot) === 0;
+        try {
+          if (fs.lstatSync(pkgPath).isSymbolicLink()) {
+            const realPath = fs.realpathSync(pkgPath);
+            resolvedPath = realPath;
+            if (realPath.indexOf(builder.projectRoot) === 0) {
+              moduleType = ModuleType.ProjectModule;
             }
-          } catch (e) {}
+          }
+        } catch (e) {}
+        if (moduleType === ModuleType.NormalNodeModule && KNOWN_RN_PACKAGES.some(regex => regex.test(pkgName))) {
+          moduleType = ModuleType.TranspiledNodeModule;
         }
-        if (!shouldTranspile) {
+        if (moduleType === ModuleType.NormalNodeModule) {
           let entryFileText;
           try {
             entryFileText = fs.readFileSync(builder.require.resolve(pkgName), 'utf8');
           } catch (e) {}
-          shouldTranspile =
-            !entryFileText || entryFileText.indexOf('__esModule') >= 0
-              ? false
-              : /^(export|import)[\s]/m.test(entryFileText);
+          if (entryFileText && entryFileText.indexOf('__esModule') < 0 && /^(export|import)[\s]/m.test(entryFileText)) {
+            moduleType = ModuleType.TranspiledNodeModule;
+          }
         }
         resolvePackagesCache[pkgPath] = {
           realPath: resolvedPath,
-          shouldTranspile
+          moduleType
         };
       }
       const resolvedPkg = resolvePackagesCache[pkgPath];
       resolveModulesCache[modulePath] = {
         realPath: path.join(resolvedPkg.realPath, modulePath.substr(pkgPathEnd + 1)),
-        shouldTranspile: resolvedPkg.shouldTranspile
+        moduleType: resolvedPkg.moduleType
       };
+      // console.log(resolveModulesCache[modulePath]);
     }
-    // console.log(resolveModulesCache[modulePath]);
     return resolveModulesCache[modulePath];
   } else {
-    // console.log({ realPath: modulePath, shouldTranspile: true });
-    return { realPath: modulePath, shouldTranspile: true };
+    // console.log({ realPath: modulePath, moduleType: ModuleType.ProjectSource });
+    return { realPath: modulePath, moduleType: ModuleType.ProjectSource };
   }
 };

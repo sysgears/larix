@@ -1065,9 +1065,17 @@ const startExp = async (zen: Zen, builders: Builders, logger) => {
 const runBuilder = (cmd: string, builder: Builder, platforms) => {
   process.chdir(builder.require.cwd);
   const zen = new Zen(builder.require.cwd, cmd);
-  const prepareDllPromise: PromiseLike<any> =
-    zen.watch && builder.webpackDll && builder.child ? buildDll(zen, builder) : Promise.resolve();
-  prepareDllPromise.then(() => startWebpack(zen, builder, platforms));
+  if (builder.stack.hasAny('webpack')) {
+    const prepareDllPromise: PromiseLike<any> =
+      zen.watch && builder.webpackDll && builder.child ? buildDll(zen, builder) : Promise.resolve();
+    prepareDllPromise.then(() => startWebpack(zen, builder, platforms));
+  } else {
+    throw new Error(
+      `builder '${
+        builder.name
+      }' stack does not include 'webpack'. Consider let zen guess your stack by removing 'stack' propery.`
+    );
+  }
 };
 
 const execute = (cmd: string, argv: any, builders: Builders, zen: Zen) => {

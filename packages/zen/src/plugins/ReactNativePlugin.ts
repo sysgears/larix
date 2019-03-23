@@ -4,8 +4,8 @@ import * as path from 'path';
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
 import Zen from '../Zen';
-import { excludeNonProjectModules } from './shared/JSRuleFinder';
 import JSRuleFinder from './shared/JSRuleFinder';
+import resolveModule, { ModuleType } from './shared/resolveModule';
 import UPFinder from './shared/UPFinder';
 
 let babelRegisterDone = false;
@@ -51,10 +51,17 @@ export default class ReactNativePlugin implements ConfigPlugin {
       const AssetResolver = builder.require('haul/src/resolvers/AssetResolver');
       const HasteResolver = builder.require('haul/src/resolvers/HasteResolver');
 
-      const babelrc = new UPFinder(builder).find(['.babelrc.native', 'babel.config.js']);
+      const babelrc = new UPFinder(builder).find(['.babelrc.native', 'babel.config.native.js']);
 
       const jsRuleFinder = new JSRuleFinder(builder);
-      const jsRule = jsRuleFinder.findAndCreateJSRule();
+      const jsRule = jsRuleFinder.findJSRule();
+      if (jsRule) {
+        jsRule.exclude = modulePath => {
+          const moduleType = resolveModule(builder, modulePath).moduleType;
+          const result = moduleType === ModuleType.NormalNodeModule || moduleType === ModuleType.TranspiledNodeModule;
+          return result;
+        };
+      }
       const cacheDirectory =
         builder.cache === false || (builder.cache === 'auto' && !zen.dev)
           ? false
@@ -62,36 +69,35 @@ export default class ReactNativePlugin implements ConfigPlugin {
               builder.cache === true || (builder.cache === 'auto' && zen.dev) ? '.cache' : builder.cache,
               'babel-loader'
             );
-      const defaultConfig =
-        babelrc && babelrc.endsWith('.babelrc.native')
-          ? JSON.parse(fs.readFileSync(babelrc).toString())
-          : {
-              compact: !zen.dev,
-              presets: (['expo'] as any[]).concat(zen.dev ? [] : [['minify', { mangle: false }]]),
-              plugins: ['haul/src/utils/fixRequireIssues']
-            };
+      const babelPkgJson = builder.require.probe('babel-core') && builder.require('babel-core/package.json');
+      const isBabel7 =
+        builder.require.probe('@babel/core') && (!babelPkgJson || babelPkgJson.version.indexOf('bridge') >= 0);
+      const reactNativePreset =
+        isBabel7 && builder.require.probe('metro-react-native-babel-preset')
+          ? 'module:metro-react-native-babel-preset'
+          : 'react-native';
+      const defaultConfig = babelrc
+        ? JSON.parse(fs.readFileSync(babelrc).toString())
+        : {
+            compact: !zen.dev,
+            presets: ([reactNativePreset] as any[]).concat(zen.dev ? [] : [['minify', { mangle: false }]]),
+            plugins: ['haul/src/utils/fixRequireIssues']
+          };
+      const babelOptions = zen.createConfig(builder, 'babel', {
+        babelrc: false,
+        configFile: false,
+        cacheDirectory,
+        ...defaultConfig
+      });
       builder.config.module.rules.push({
-        test: new RegExp(
-          '^.*[\\\\\\/]node_modules[\\\\\\/].*\\.' +
-            String(jsRule.test)
-              .split('.')
-              .pop()
-              .slice(0, -1)
-        ),
-        exclude: excludeNonProjectModules(builder),
+        test: /\.js$/,
+        exclude: modulePath => {
+          const result = resolveModule(builder, modulePath).moduleType !== ModuleType.TranspiledNodeModule;
+          return result;
+        },
         use: {
           loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
-          options: zen.createConfig(
-            builder,
-            'babel',
-            babelrc && babelrc.endsWith('.babelrc.native')
-              ? {
-                  babelrc: false,
-                  cacheDirectory,
-                  ...defaultConfig
-                }
-              : { babelrc: true, cacheDirectory }
-          )
+          options: babelOptions
         }
       });
 
