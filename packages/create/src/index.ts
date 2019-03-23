@@ -14,7 +14,7 @@ process
   });
 
 (async () => {
-  const { appName } = await generate(templates, templateWriter, 'yarn create apollo-app', process.argv);
+  const { appName } = await generate(templates, templateWriter, 'yarn create @larix', process.argv);
 
   console.log(`App ${chalk.green(appName)} generated successfully! Execute commands below to start it:\n`);
   console.log(chalk.yellow(`cd ${appName}`));
