@@ -80,7 +80,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
         ? JSON.parse(fs.readFileSync(babelrc).toString())
         : {
             compact: !zen.dev,
-            presets: ([reactNativePreset] as any[]).concat(zen.dev ? [] : [['minify', { mangle: false }]]),
+            presets: [reactNativePreset] as any[],
             plugins: ['haul/src/utils/fixRequireIssues']
           };
       const babelOptions = zen.createConfig(builder, 'babel', {
