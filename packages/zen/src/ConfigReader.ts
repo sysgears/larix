@@ -79,9 +79,9 @@ export default class ConfigReader {
   }
 
   private _createBuilders(filePath: string, config: any, derivedConfig: any, builderOverrides: any): Builders {
+    config = this.zen.merge(derivedConfig, config);
     config = config || {};
     config.options = config.options || {};
-    config.builders = this.zen.merge(derivedConfig.builders, config.builders);
 
     const relativePath = path.relative(this.zen.cwd, path.dirname(filePath));
     const builders: Builders = {};
