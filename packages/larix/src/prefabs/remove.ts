@@ -49,7 +49,7 @@ export const removePrefabs = async (options: RemovePrefabsOptions) => {
         registryUrl: options.registryUrl,
         cacheDir: options.cacheDir
       });
-      const patch = patchToStr(createPatch(prefabCacheDir, realDir), pkgJson.version);
+      const patch = patchToStr(createPatch(prefabCacheDir, realDir, options.cacheDir));
       try {
         removeDirAndEmptyDirsUp(realDir);
         removeDirAndEmptyDirsUp(prefabDir);

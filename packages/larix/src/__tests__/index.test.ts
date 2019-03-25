@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as tmp from 'tmp';
+import { parsePkgVersionFromPatch } from '../diff';
 import { getDirFiles } from '../fs';
 import { addPrefabs, removePrefabs } from '../prefabs';
 import { downloadPrefab } from '../prefabs/download';
@@ -109,7 +110,24 @@ describe('larix', () => {
     expect(files).toContain('modules/core/core.patch');
   });
 
+  it('should throw on non-larix patch', async () => {
+    const patchPath = path.join(path.join(project.dir, 'index.patch'));
+    fs.writeFileSync(
+      patchPath,
+      '--- index.ts       2019-03-25 16:35:41.918\n' +
+        '+++ index.ts        2019-03-25 16:35:41.914\n' +
+        '@@ -1,1 +1,2 @@\n' +
+        '+// Comment\n' +
+        `console.log('Hello!');\n` +
+        ' No newline at end of file\n'
+    );
+    expect(() => parsePkgVersionFromPatch(patchPath)).toThrow();
+  });
+
   it('should be able to determine version from created patch', async () => {
     await createPatch();
+    const patchPath = path.join(project.dir, 'modules/core/core.patch');
+    expect(fs.existsSync(patchPath)).toBeTruthy();
+    expect(parsePkgVersionFromPatch(patchPath)).toEqual('0.0.1');
   });
 });

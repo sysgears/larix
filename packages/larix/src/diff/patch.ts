@@ -85,10 +85,10 @@ export const parsePatch = (contents: string, options?: any): ParsedPatch => {
   return result;
 };
 
-export const patchToStr = (patch: Patch | diff.IUniDiff, pkgVersion: string): string => {
+export const patchToStr = (patch: Patch | diff.IUniDiff): string => {
   if (!isPatchObj(patch)) {
     const lines = [];
-    lines.push('--- ' + patch.oldFileName + '\t' + patch.oldHeader + '\t' + pkgVersion);
+    lines.push('--- ' + patch.oldFileName + '\t' + patch.oldHeader);
     lines.push('+++ ' + patch.newFileName + '\t' + patch.newHeader);
 
     for (const hunk of patch.hunks) {
@@ -99,7 +99,7 @@ export const patchToStr = (patch: Patch | diff.IUniDiff, pkgVersion: string): st
   } else {
     let result = '';
     for (const key of Object.keys(patch)) {
-      result = result + patchToStr(patch[key], pkgVersion);
+      result = result + patchToStr(patch[key]);
     }
     return result;
   }
@@ -107,6 +107,11 @@ export const patchToStr = (patch: Patch | diff.IUniDiff, pkgVersion: string): st
 
 export const parsePkgVersionFromPatch = (patchPath: string): string => {
   const contents = fs.readFileSync(patchPath, 'utf8');
-  const matches = contents.match(/^---[^\t]+\t[^\t]+\t(.+)$/m);
-  return matches && matches[1];
+  const matches = contents.match(/^---[\s]([^\t\\\/]+)/m);
+  if (!matches || matches.length <= 1 || !matches[1].startsWith('npm-')) {
+    throw new Error(`Non larix patch detected at: ${patchPath}`);
+  } else {
+    const parts = matches[1].split('-');
+    return parts[parts.length - 1];
+  }
 };
