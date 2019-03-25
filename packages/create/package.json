@@ -1,6 +1,6 @@
 {
   "name": "@larix/create",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
   "main": "lib/index.js",
@@ -24,7 +24,7 @@
     "prepublishOnly": "yarn clean && yarn build"
   },
   "bin": {
-    "create-larix-app": "create-larix-app.js"
+    "create": "create-larix-app.js"
   },
   "files": [
     "create-larix-app.js",
