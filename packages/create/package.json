@@ -1,6 +1,6 @@
 {
   "name": "@larix/create",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
   "main": "lib/index.js",
