@@ -302,7 +302,8 @@ const createConfig = (builder: Builder, zen: Zen) => {
           request.indexOf('webpack') < 0 &&
           request.indexOf('mochapack') < 0 &&
           request.indexOf('mocha-webpack') < 0 &&
-          !request.startsWith('.')
+          !request.startsWith('.') &&
+          !request.startsWith('!')
         ) {
           const fullPath = builder.require.probe(request, context);
           if (fullPath) {

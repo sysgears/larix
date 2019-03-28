@@ -12,13 +12,27 @@ for (const dir of entryDirs) {
   entryCandidates = entryCandidates.concat(entryExts.map(ext => './' + path.join(dir, 'index.' + ext)));
 }
 
+enum Platform {
+  Server = 'server',
+  Web = 'web',
+  Mobile = 'mobile'
+}
+
 const isZenApp = (pkg: any): boolean => {
-  return (
+  const hasZenDep =
     Object.keys(pkg.dependencies || {})
       .concat(Object.keys(pkg.devDependencies || {}))
-      .indexOf('zen') >= 0 ||
-    (pkg.scripts && pkg.scripts.build && pkg.scripts.build.indexOf('zen build') >= 0)
-  );
+      .indexOf('zen') >= 0;
+  if (hasZenDep) {
+    return true;
+  } else {
+    for (const key of Object.keys(pkg.scripts || [])) {
+      if (pkg.scripts[key].indexOf('zen ') >= 0) {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 export default (pkgJsonPath: string): object => {
@@ -33,10 +47,10 @@ export default (pkgJsonPath: string): object => {
     }
     const pkgPathList = upDirs(path.dirname(pkgJsonPath), 'package.json');
     let deps: any = {};
+    const requireDep = createRequire(path.dirname(pkgJsonPath));
     for (const pkgPath of pkgPathList) {
       if (fs.existsSync(pkgPath)) {
         const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-        const requireDep = createRequire(path.dirname(pkgPath));
         deps = { ...deps, ...getDeps(pkgPath, requireDep, {}), ...(pkgJson.devDependencies || {}) };
       }
     }
@@ -48,23 +62,25 @@ export default (pkgJsonPath: string): object => {
         break;
       }
     }
-    if (!entry) {
-      throw new Error('Cannot find entry file, tried: ' + entryCandidates);
-    }
 
     const stack: string[] = [];
-    let isMobile = false;
+    let platform: Platform;
     if (deps['apollo-server-express'] || deps.express) {
       stack.push('server');
+      platform = Platform.Server;
     }
     if (deps['swagger-ui-express'] || deps['swagger-jsdoc']) {
       stack.push('rest');
     }
-    if (deps['react-native']) {
+    if (!platform && deps['react-native']) {
       stack.push('android');
-      isMobile = true;
-    } else if (deps['react-dom'] || deps['@angular/core'] || deps.vue) {
+      platform = Platform.Mobile;
+    } else if (!platform && (deps['react-dom'] || deps['@angular/core'] || deps.vue)) {
+      platform = Platform.Web;
       stack.push('web');
+    }
+    if (deps.graphql) {
+      stack.push('apollo');
     }
     if (relRequire.probe('babel-core') || relRequire.probe('@babel/core')) {
       stack.push('es6');
@@ -91,13 +107,13 @@ export default (pkgJsonPath: string): object => {
     if (relRequire.probe('styled-components')) {
       stack.push('styled-components');
     }
-    if (relRequire.probe('css-loader') && !isMobile) {
+    if (relRequire.probe('css-loader') && platform !== Platform.Mobile) {
       stack.push('css');
     }
-    if (relRequire.probe('sass-loader') && !isMobile) {
+    if (relRequire.probe('sass-loader') && platform !== Platform.Mobile) {
       stack.push('sass');
     }
-    if (relRequire.probe('less-loader') && !isMobile) {
+    if (relRequire.probe('less-loader') && platform !== Platform.Mobile) {
       stack.push('less');
     }
     if (relRequire.probe('@alienfast/i18next-loader')) {
@@ -108,13 +124,15 @@ export default (pkgJsonPath: string): object => {
     }
 
     let config;
-    const builderDefaults = {
-      entry,
+    const builderDefaults: any = {
       silent: true,
       nodeDebugger: false,
       infered: true
     };
-    if (stack.indexOf('react-native') >= 0) {
+    if (entry) {
+      builderDefaults.entry = entry;
+    }
+    if (platform === Platform.Mobile) {
       const builderAndroid = {
         stack,
         ...builderDefaults
@@ -139,17 +157,13 @@ export default (pkgJsonPath: string): object => {
         }
       };
     } else {
-      const platform = new Stack(...stack).platform;
-      const builder = {
-        stack,
-        ...builderDefaults
-      };
-
+      const testStack = !platform
+        ? stack.concat(['server'])
+        : stack.map(tech => (tech !== platform.toString() ? tech : 'server'));
       config = {
         builders: {
-          [platform]: builder,
           test: {
-            stack: stack.map(tech => (tech !== platform ? tech : 'server')),
+            stack: testStack,
             roles: ['test'],
             defines: {
               __TEST__: true
@@ -157,6 +171,14 @@ export default (pkgJsonPath: string): object => {
           }
         }
       };
+      if (platform) {
+        const builder = {
+          stack,
+          ...builderDefaults
+        };
+
+        config.builders[platform.toString()] = builder;
+      }
     }
 
     return config;
