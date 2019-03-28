@@ -1,6 +1,6 @@
 {
   "name": "@larix/create",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
   "main": "lib/index.js",
@@ -28,15 +28,13 @@
   },
   "files": [
     "create-larix-app.js",
-    "lib/*.js",
-    "lib/*.d.ts",
-    "lib/*.map",
+    "lib",
     "templates"
   ],
   "prettier": {
     "printWidth": 120,
     "singleQuote": true,
-    "parser": "babylon"
+    "parser": "babel"
   },
   "jest": {
     "transform": {
