@@ -1,4 +1,4 @@
-# Larix Framework
+# Larix Meta Framework
 
 ## License
 
