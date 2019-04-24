@@ -98,6 +98,11 @@ export default class ConfigReader {
         }
       }
     }
+    if (Object.keys(config).length > 0) {
+      for (const derivedName of Object.keys(derivedConfig.builders || {})) {
+        delete derivedConfig.builders[derivedName].silent;
+      }
+    }
     config = this.zen.merge(derivedConfig, config);
     config.options = config.options || {};
 
