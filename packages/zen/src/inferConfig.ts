@@ -45,11 +45,11 @@ export default (pkgJsonPath: string): object => {
       return {};
     }
     const projectRoot = getProjectRoot(path.dirname(pkgJsonPath));
-    const pkg = {
-      ...getTopDeps(pkgJsonPath, projectRoot, createRequire(path.dirname(pkgJsonPath))),
-      ...getTopDeps(path.join(projectRoot, 'package.json'), projectRoot, createRequire(projectRoot))
-    };
+    const localPkg = getTopDeps(pkgJsonPath, projectRoot, createRequire(path.dirname(pkgJsonPath)));
+    const rootPkg = getTopDeps(path.join(projectRoot, 'package.json'), projectRoot, createRequire(projectRoot));
+    const pkg: any = {};
     for (const depGroup of ['dependencies', 'devDependencies']) {
+      pkg[depGroup] = { ...(localPkg[depGroup] || {}), ...(rootPkg[depGroup] || {}) };
       pkg[depGroup] = Object.keys(pkg[depGroup] || {})
         .sort()
         .reduce((acc, key) => {

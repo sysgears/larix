@@ -1,6 +1,6 @@
 {
   "name": "@larix/zen",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf ./lib",
