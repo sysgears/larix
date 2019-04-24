@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import createRequire from './createRequire';
-import getDeps from './getDeps';
-import Stack from './Stack';
-import upDirs from './upDirs';
+import { getTopDeps } from './deps';
+import getProjectRoot from './getProjectRoot';
 
 const entryExts = ['js', 'jsx', 'ts', 'tsx'];
 const entryDirs = ['.', 'src'];
@@ -37,23 +37,30 @@ const isZenApp = (pkg: any): boolean => {
 
 export default (pkgJsonPath: string): object => {
   try {
-    const relRequire = createRequire(path.dirname(pkgJsonPath));
     if (!pkgJsonPath || !fs.existsSync(pkgJsonPath)) {
       return {};
     }
-    const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
-    if (!isZenApp(pkg)) {
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+    if (!isZenApp(pkgJson)) {
       return {};
     }
-    const pkgPathList = upDirs(path.dirname(pkgJsonPath), 'package.json');
-    let deps: any = {};
-    const requireDep = createRequire(path.dirname(pkgJsonPath));
-    for (const pkgPath of pkgPathList) {
-      if (fs.existsSync(pkgPath)) {
-        const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-        deps = { ...deps, ...getDeps(pkgPath, requireDep, {}), ...(pkgJson.devDependencies || {}) };
-      }
+    const projectRoot = getProjectRoot(path.dirname(pkgJsonPath));
+    const pkg = {
+      ...getTopDeps(pkgJsonPath, projectRoot, createRequire(path.dirname(pkgJsonPath))),
+      ...getTopDeps(path.join(projectRoot, 'package.json'), projectRoot, createRequire(projectRoot))
+    };
+    for (const depGroup of ['dependencies', 'devDependencies']) {
+      pkg[depGroup] = Object.keys(pkg[depGroup] || {})
+        .sort()
+        .reduce((acc, key) => {
+          if (!pkg[depGroup][key].startsWith('| ') && !pkg[depGroup][key].startsWith('optional:')) {
+            acc[key] = pkg[depGroup][key];
+          }
+          return acc;
+        }, {});
     }
+    const deps = pkg.dependencies;
+    const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
 
     let entry;
     for (const entryPath of entryCandidates) {
@@ -75,18 +82,18 @@ export default (pkgJsonPath: string): object => {
     if (!platform && deps['react-native']) {
       stack.push('android');
       platform = Platform.Mobile;
-    } else if (!platform && (deps['react-dom'] || deps['@angular/core'] || deps.vue)) {
+    } else if (!platform && (deps.react || deps['@angular/core'] || deps.vue)) {
       platform = Platform.Web;
       stack.push('web');
     }
     if (deps.graphql) {
       stack.push('apollo');
     }
-    if (relRequire.probe('babel-core') || relRequire.probe('@babel/core')) {
+    if (allDeps['babel-core'] || allDeps['@babel/core']) {
       stack.push('es6');
     }
     stack.push('js');
-    if (relRequire.probe('typescript')) {
+    if (allDeps.typescript) {
       stack.push('ts');
     }
     if (deps['apollo-server-express'] || deps['react-apollo'] || deps['apollo-boost'] || deps['apollo-link']) {
@@ -104,22 +111,22 @@ export default (pkgJsonPath: string): object => {
     if (deps['react-native']) {
       stack.push('react-native');
     }
-    if (relRequire.probe('styled-components')) {
+    if (deps['styled-components']) {
       stack.push('styled-components');
     }
-    if (relRequire.probe('css-loader') && platform !== Platform.Mobile) {
+    if (allDeps['css-loader'] && platform !== Platform.Mobile) {
       stack.push('css');
     }
-    if (relRequire.probe('sass-loader') && platform !== Platform.Mobile) {
+    if (allDeps['sass-loader'] && platform !== Platform.Mobile) {
       stack.push('sass');
     }
-    if (relRequire.probe('less-loader') && platform !== Platform.Mobile) {
+    if (allDeps['less-loader'] && platform !== Platform.Mobile) {
       stack.push('less');
     }
-    if (relRequire.probe('@alienfast/i18next-loader')) {
+    if (allDeps['@alienfast/i18next-loader']) {
       stack.push('i18next');
     }
-    if (relRequire.probe('webpack')) {
+    if (allDeps.webpack) {
       stack.push('webpack');
     }
 

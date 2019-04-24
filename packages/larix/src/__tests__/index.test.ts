@@ -130,4 +130,6 @@ describe('larix', () => {
     expect(fs.existsSync(patchPath)).toBeTruthy();
     expect(parsePkgVersionFromPatch(patchPath)).toEqual('0.0.1');
   });
+
+  it('should be able to install prefab and apply patch', async () => {});
 });

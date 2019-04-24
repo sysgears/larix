@@ -1,13 +1,12 @@
 import * as cluster from 'cluster';
 import * as fs from 'fs';
 import * as minilog from 'minilog';
-import * as path from 'path';
-import upDirs from './upDirs';
 
 import { Builder } from './Builder';
 import BuilderDiscoverer from './BuilderDiscoverer';
 import { ConfigPlugin } from './ConfigPlugin';
 import ConfigReader from './ConfigReader';
+import getProjectRoot from './getProjectRoot';
 import AngularPlugin from './plugins/AngularPlugin';
 import ApolloPlugin from './plugins/ApolloPlugin';
 import BabelPlugin from './plugins/BabelPlugin';
@@ -31,20 +30,6 @@ import Zen from './Zen';
 const WEBPACK_OVERRIDES_NAME = 'webpack.overrides.js';
 
 const zenLogger = minilog('zen');
-
-const getProjectRoot = (builder: Builder): string => {
-  const pkgPathList = upDirs(builder.require.cwd, 'package.json');
-  let projectRoot;
-  for (const pkg of pkgPathList) {
-    if (fs.existsSync(pkg)) {
-      try {
-        JSON.parse(fs.readFileSync(pkg, 'utf8'));
-        projectRoot = path.dirname(pkg);
-      } catch (e) {}
-    }
-  }
-  return projectRoot;
-};
 
 const createBuilders = ({
   cwd,
@@ -127,7 +112,7 @@ const createBuilders = ({
     }
 
     if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {
-      builder.projectRoot = getProjectRoot(builder);
+      builder.projectRoot = getProjectRoot(builder.require.cwd);
     }
 
     if (zen.dev && builder.webpackDll && !stack.hasAny('server') && !builderName) {

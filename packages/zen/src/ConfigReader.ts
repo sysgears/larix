@@ -79,8 +79,26 @@ export default class ConfigReader {
   }
 
   private _createBuilders(filePath: string, config: any, derivedConfig: any, builderOverrides: any): Builders {
-    config = this.zen.merge(derivedConfig, config);
     config = config || {};
+    derivedConfig = derivedConfig || {};
+    for (const derivedName of Object.keys(derivedConfig.builders || {})) {
+      const derPlatform = Stack.getPlatform(derivedConfig.builders[derivedName].stack);
+      const derRoles = derivedConfig.builders[derivedName].roles;
+      for (const name of Object.keys(config.builders || {})) {
+        let fullStack = config.builders[name].stack || [];
+        if (config.options && config.options.stack) {
+          fullStack = [...fullStack, ...config.options.stack];
+        }
+        const platform = Stack.getPlatform(fullStack);
+        const roles = config.builders[name].roles;
+        if (platform && derPlatform && platform === derPlatform && derRoles === roles && name !== derivedName) {
+          const tmp = derivedConfig.builders[derivedName];
+          delete derivedConfig.builders[derivedName];
+          derivedConfig.builders[name] = tmp;
+        }
+      }
+    }
+    config = this.zen.merge(derivedConfig, config);
     config.options = config.options || {};
 
     const relativePath = path.relative(this.zen.cwd, path.dirname(filePath));
@@ -100,9 +118,7 @@ export default class ConfigReader {
             builder = this.zen.merge(derivedConfig.builders[name], builder);
           } else {
             throw new Error(
-              `Builder '${
-                builder.name
-              }' has no stack defined.\nIf this is your custom builder, you must define 'stack'\nIf you mean to override options for infered builder, specify its name as a key from the list: ${JSON.stringify(
+              `builder has no stack defined.\nIf this is your custom builder, you must define 'stack'\nIf you mean to override options for infered builder, specify its name as a key from the list: ${JSON.stringify(
                 Object.keys(derivedConfig.builders)
               )}`
             );

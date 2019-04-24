@@ -14,19 +14,28 @@ export default class Stack {
         }
       }, [])
       .filter((v, i, a) => a.indexOf(v) === i);
-    if (this.hasAny('server')) {
-      this.platform = 'server';
-    } else if (this.hasAny('web')) {
-      this.platform = 'web';
-    } else if (this.hasAny('android')) {
-      this.platform = 'android';
-    } else if (this.hasAny('ios')) {
-      this.platform = 'ios';
-    } else {
+    this.platform = Stack.getPlatform(this.technologies);
+    if (!this.platform) {
       throw new Error(
         `stack should include 'webpack' and one of 'server', 'web', 'android', 'ios', stack: ${this.technologies}`
       );
     }
+  }
+
+  public static getPlatform(stack: string[]): string | undefined {
+    let platform;
+    if (stack) {
+      if (stack.indexOf('server') >= 0) {
+        platform = 'server';
+      } else if (stack.indexOf('web') >= 0) {
+        platform = 'web';
+      } else if (stack.indexOf('android') >= 0) {
+        platform = 'android';
+      } else if (stack.indexOf('ios') >= 0) {
+        platform = 'ios';
+      }
+    }
+    return platform;
   }
 
   public hasAny(technologies): boolean {

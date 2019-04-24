@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Builder } from '../../Builder';
+import { RequireFunction } from '../createRequire';
 
 export enum ModuleType {
   ProjectSource = 0,
@@ -10,7 +10,7 @@ export enum ModuleType {
   NormalNodeModule = 3
 }
 
-interface ResolveResult {
+export interface ResolveResult {
   realPath: string;
   moduleType: ModuleType;
 }
@@ -19,16 +19,16 @@ const resolvePackagesCache: { [pkgPath: string]: ResolveResult } = {};
 const resolveModulesCache: { [modulePath: string]: ResolveResult } = {};
 const KNOWN_RN_PACKAGES = [/expo.*/, /@expo.*/, /react-navigation.*/, /react-native.*/];
 
-export default (builder: Builder, modulePath: string): ResolveResult => {
-  const idx = modulePath.lastIndexOf(path.sep + 'node_modules' + path.sep);
+export default (depPath: string, projectRoot: string, requireDep: RequireFunction): ResolveResult => {
+  const idx = depPath.lastIndexOf(path.sep + 'node_modules' + path.sep);
   if (idx >= 0) {
-    if (resolveModulesCache[modulePath] === undefined) {
-      const pkgPathStart = modulePath[idx + 14] !== '@' ? idx + 14 : modulePath.indexOf(path.sep, idx + 14) + 1;
-      let pkgPathEnd = modulePath.indexOf(path.sep, pkgPathStart);
+    if (resolveModulesCache[depPath] === undefined) {
+      const pkgPathStart = depPath[idx + 14] !== '@' ? idx + 14 : depPath.indexOf(path.sep, idx + 14) + 1;
+      let pkgPathEnd = depPath.indexOf(path.sep, pkgPathStart);
       if (pkgPathEnd < 0) {
-        pkgPathEnd = modulePath.length;
+        pkgPathEnd = depPath.length;
       }
-      const pkgPath = modulePath.substr(0, pkgPathEnd);
+      const pkgPath = depPath.substr(0, pkgPathEnd);
       if (resolvePackagesCache[pkgPath] === undefined) {
         const pkgName = pkgPath.substr(idx + 14);
         let moduleType: ModuleType = ModuleType.NormalNodeModule;
@@ -37,7 +37,7 @@ export default (builder: Builder, modulePath: string): ResolveResult => {
           if (fs.lstatSync(pkgPath).isSymbolicLink()) {
             const realPath = fs.realpathSync(pkgPath);
             resolvedPath = realPath;
-            if (realPath.indexOf(builder.projectRoot) === 0) {
+            if (realPath.indexOf(projectRoot) === 0) {
               moduleType = ModuleType.ProjectModule;
             }
           }
@@ -48,7 +48,7 @@ export default (builder: Builder, modulePath: string): ResolveResult => {
         if (moduleType === ModuleType.NormalNodeModule) {
           let entryFileText;
           try {
-            entryFileText = fs.readFileSync(builder.require.resolve(pkgName), 'utf8');
+            entryFileText = fs.readFileSync(requireDep.resolve(pkgName), 'utf8');
           } catch (e) {}
           if (entryFileText && entryFileText.indexOf('__esModule') < 0 && /^(export|import)[\s]/m.test(entryFileText)) {
             moduleType = ModuleType.TranspiledNodeModule;
@@ -60,15 +60,15 @@ export default (builder: Builder, modulePath: string): ResolveResult => {
         };
       }
       const resolvedPkg = resolvePackagesCache[pkgPath];
-      resolveModulesCache[modulePath] = {
-        realPath: path.join(resolvedPkg.realPath, modulePath.substr(pkgPathEnd + 1)),
+      resolveModulesCache[depPath] = {
+        realPath: path.join(resolvedPkg.realPath, depPath.substr(pkgPathEnd + 1)),
         moduleType: resolvedPkg.moduleType
       };
       // console.log(resolveModulesCache[modulePath]);
     }
-    return resolveModulesCache[modulePath];
+    return resolveModulesCache[depPath];
   } else {
     // console.log({ realPath: modulePath, moduleType: ModuleType.ProjectSource });
-    return { realPath: modulePath, moduleType: ModuleType.ProjectSource };
+    return { realPath: depPath, moduleType: ModuleType.ProjectSource };
   }
 };

@@ -1,7 +1,7 @@
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
+import { ModuleType, resolveDepType } from '../deps';
 import Zen from '../Zen';
-import resolveModule, { ModuleType } from './shared/resolveModule';
 
 const postCssDefaultConfig = (builder: Builder) => {
   return {
@@ -31,7 +31,7 @@ export default class CssProcessorPlugin implements ConfigPlugin {
         createRule = (ext: string, nodeModules: boolean, ruleList: any[]) => ({
           test: new RegExp(`\\.${ext}$`),
           exclude: modulePath => {
-            const moduleType = resolveModule(builder, modulePath).moduleType;
+            const moduleType = resolveDepType(modulePath, builder.projectRoot, builder.require).moduleType;
             return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
           },
           use: ([
@@ -67,7 +67,7 @@ export default class CssProcessorPlugin implements ConfigPlugin {
             return {
               test: new RegExp(`\\.${ext}$`),
               exclude: modulePath => {
-                const moduleType = resolveModule(builder, modulePath).moduleType;
+                const moduleType = resolveDepType(modulePath, builder.projectRoot, builder.require).moduleType;
                 return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
               },
               use: dev
@@ -141,7 +141,7 @@ export default class CssProcessorPlugin implements ConfigPlugin {
             return {
               test: new RegExp(`\\.${ext}$`),
               exclude: modulePath => {
-                const moduleType = resolveModule(builder, modulePath).moduleType;
+                const moduleType = resolveDepType(modulePath, builder.projectRoot, builder.require).moduleType;
                 return nodeModules ? moduleType <= ModuleType.ProjectModule : moduleType > ModuleType.ProjectModule;
               },
               use: dev

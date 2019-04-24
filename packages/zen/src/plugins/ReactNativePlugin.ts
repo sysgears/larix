@@ -3,9 +3,9 @@ import * as path from 'path';
 
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
+import { ModuleType, resolveDepType } from '../deps';
 import Zen from '../Zen';
 import JSRuleFinder from './shared/JSRuleFinder';
-import resolveModule, { ModuleType } from './shared/resolveModule';
 import UPFinder from './shared/UPFinder';
 
 let babelRegisterDone = false;
@@ -57,7 +57,7 @@ export default class ReactNativePlugin implements ConfigPlugin {
       const jsRule = jsRuleFinder.findJSRule();
       if (jsRule) {
         jsRule.exclude = modulePath => {
-          const moduleType = resolveModule(builder, modulePath).moduleType;
+          const moduleType = resolveDepType(modulePath, builder.projectRoot, builder.require).moduleType;
           const result = moduleType === ModuleType.NormalNodeModule || moduleType === ModuleType.TranspiledNodeModule;
           return result;
         };
@@ -90,9 +90,11 @@ export default class ReactNativePlugin implements ConfigPlugin {
         ...defaultConfig
       });
       builder.config.module.rules.push({
-        test: /\.js$/,
+        test: /\.[jt]s$/,
         exclude: modulePath => {
-          const result = resolveModule(builder, modulePath).moduleType !== ModuleType.TranspiledNodeModule;
+          const result =
+            resolveDepType(modulePath, builder.projectRoot, builder.require).moduleType !==
+            ModuleType.TranspiledNodeModule;
           return result;
         },
         use: {

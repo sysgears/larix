@@ -153,6 +153,10 @@ export default function create(compiler, logger) {
 
     // error error on the wall, who's the fairest stack of all?
     const convertedFrames = unconvertedFrames.map(originalFrame => {
+      if (!originalFrame.lineNumber) {
+        return originalFrame;
+      }
+
       // find the original home of this line of code.
       const lookup = consumer.originalPositionFor({
         line: originalFrame.lineNumber,

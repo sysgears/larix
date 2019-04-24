@@ -5,10 +5,10 @@ import * as url from 'url';
 
 import { Builder } from '../Builder';
 import { ConfigPlugin } from '../ConfigPlugin';
+import { resolveDepType } from '../deps';
 import getDllName from '../getDllName';
 import upDirs from '../upDirs';
 import Zen from '../Zen';
-import resolveModule from './shared/resolveModule';
 
 const __WINDOWS__ = /^win/.test(process.platform);
 
@@ -267,9 +267,13 @@ const createConfig = (builder: Builder, zen: Zen) => {
       ? info =>
           'webpack:///./' +
           path
-            .relative(cwd, resolveModule(builder, info.absoluteResourcePath.split('?')[0]).realPath)
+            .relative(
+              cwd,
+              resolveDepType(info.absoluteResourcePath.split('?')[0], builder.projectRoot, builder.require).realPath
+            )
             .replace(/\\/g, '/')
-      : info => path.relative(cwd, resolveModule(builder, info.absoluteResourcePath).realPath);
+      : info =>
+          path.relative(cwd, resolveDepType(info.absoluteResourcePath, builder.projectRoot, builder.require).realPath);
   }
   if (webpackVer >= 4) {
     baseConfig.mode = !zen.dev ? 'production' : 'development';
@@ -318,7 +322,10 @@ const createConfig = (builder: Builder, zen: Zen) => {
     };
     if (builder.sourceMap) {
       config.output.devtoolModuleFilenameTemplate = (info: any) => {
-        const modPath = path.relative(config.output.path, resolveModule(builder, info.absoluteResourcePath).realPath);
+        const modPath = path.relative(
+          config.output.path,
+          resolveDepType(info.absoluteResourcePath, builder.projectRoot, builder.require).realPath
+        );
         return modPath;
       };
     }

@@ -1,5 +1,5 @@
 import { Builder } from '../../Builder';
-import resolveModule, { ModuleType } from './resolveModule';
+import { ModuleType, resolveDepType } from '../../deps';
 
 export default class JSRuleFinder {
   public builder: Builder;
@@ -34,7 +34,9 @@ export default class JSRuleFinder {
     }
     this.jsRule = {
       test: /\.js$/,
-      exclude: modulePath => resolveModule(this.builder, modulePath).moduleType === ModuleType.NormalNodeModule
+      exclude: modulePath =>
+        resolveDepType(modulePath, this.builder.projectRoot, this.builder.require).moduleType ===
+        ModuleType.NormalNodeModule
     };
     this.builder.config.module.rules = this.builder.config.module.rules.concat(this.jsRule);
     return this.jsRule;
@@ -68,7 +70,7 @@ export default class JSRuleFinder {
     this.tsRule = {
       test: /\.ts$/,
       exclude: modulePath => {
-        const moduleType = resolveModule(this.builder, modulePath).moduleType;
+        const moduleType = resolveDepType(modulePath, this.builder.projectRoot, this.builder.require).moduleType;
         return moduleType === ModuleType.NormalNodeModule || moduleType === ModuleType.TranspiledNodeModule;
       }
     };
