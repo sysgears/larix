@@ -42,23 +42,23 @@ const createPlugins = (builder: Builder, zen: Zen) => {
       }
     }
   } else {
-    if (builder.minify) {
-      const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
-      if (builder.sourceMap) {
-        uglifyOpts.sourceMap = true;
-      }
-      if (stack.hasAny('angular')) {
-        // https://github.com/angular/angular/issues/10618
-        uglifyOpts.uglifyOptions = {
-          mangle: {
-            keep_fnames: true
-          }
-        };
-      }
-      const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
-      plugins.push(new UglifyJsPlugin(uglifyOpts));
-    }
     if (webpackVer < 4) {
+      if (builder.minify) {
+        const uglifyOpts: any = { test: /\.(js|bundle)(\?.*)?$/i, cache: true, parallel: true };
+        if (builder.sourceMap) {
+          uglifyOpts.sourceMap = true;
+        }
+        if (stack.hasAny('angular')) {
+          // https://github.com/angular/angular/issues/10618
+          uglifyOpts.uglifyOptions = {
+            mangle: {
+              keep_fnames: true
+            }
+          };
+        }
+        const UglifyJsPlugin = builder.require('uglifyjs-webpack-plugin');
+        plugins.push(new UglifyJsPlugin(uglifyOpts));
+      }
       plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     }
   }
@@ -364,6 +364,20 @@ const createConfig = (builder: Builder, zen: Zen) => {
           noEmitOnErrors: true
         }
       };
+      const TerserPlugin = builder.require('terser-webpack-plugin');
+      const terserOptions: any = {};
+      if (stack.hasAny('angular')) {
+        terserOptions.keep_fnames = true;
+      }
+      config.optimization.minimizer = [
+        new TerserPlugin({
+          test: /\.(js|bundle)(\?.*)?$/i,
+          cache: true,
+          parallel: true,
+          sourceMap: builder.sourceMap,
+          terserOptions: zen.createConfig(builder, 'terser', terserOptions)
+        })
+      ];
     }
   }
 
