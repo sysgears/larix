@@ -24,7 +24,7 @@ import symbolicateMiddleware from './plugins/react-native/symbolicateMiddleware'
 import { hookAsync, hookSync } from './webpackHooks';
 import Zen from './Zen';
 
-const SPIN_DLL_VERSION = 2;
+const LARIX_DLL_VERSION = 3;
 const BACKEND_CHANGE_MSG = 'backend_change';
 
 const debug = Debug('zen');
@@ -677,7 +677,7 @@ const isDllValid = (zen, builder, logger): boolean => {
       return false;
     }
     const relMeta = JSON.parse(fs.readFileSync(hashesPath).toString());
-    if (SPIN_DLL_VERSION !== relMeta.version) {
+    if (LARIX_DLL_VERSION !== relMeta.version) {
       return false;
     }
     if (!fs.existsSync(path.join(builder.dllBuildDir, relMeta.name))) {
@@ -749,7 +749,7 @@ const buildDll = (zen: Zen, builder: Builder) => {
           });
           fs.writeFileSync(path.join(builder.dllBuildDir, `${vendorKey}.assets`), JSON.stringify(assets));
 
-          const meta = { name: vendorKey, hashes: {}, modules: config.entry.vendor, version: SPIN_DLL_VERSION };
+          const meta = { name: vendorKey, hashes: {}, modules: config.entry.vendor, version: LARIX_DLL_VERSION };
           for (const filename of Object.keys(json.content)) {
             if (filename.indexOf(' ') < 0 && filename.indexOf('@virtual') < 0) {
               meta.hashes[filename] = crypto

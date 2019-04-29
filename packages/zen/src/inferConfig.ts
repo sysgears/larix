@@ -114,6 +114,9 @@ export default (pkgJsonPath: string): object => {
     if (deps['styled-components']) {
       stack.push('styled-components');
     }
+    if (deps['react-hot-loader']) {
+      stack.push('react-hot-loader');
+    }
     if (allDeps['css-loader'] && platform !== Platform.Mobile) {
       stack.push('css');
     }

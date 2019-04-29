@@ -56,7 +56,6 @@ const createBuilders = ({
     new TypeScriptPlugin(),
     new BabelPlugin(),
     new ReactPlugin(),
-    new ReactHotLoaderPlugin(),
     new TCombPlugin(),
     new FlowRuntimePLugin(),
     new ReactNativePlugin(),
@@ -65,7 +64,8 @@ const createBuilders = ({
     new AngularPlugin(),
     new VuePlugin(),
     new I18NextPlugin(),
-    new RestPlugin()
+    new RestPlugin(),
+    new ReactHotLoaderPlugin()
   ];
   const zen = new Zen(cwd, cmd);
   let role = cmd;
