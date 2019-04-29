@@ -308,6 +308,169 @@ const debugMiddleware = (req, res, next) => {
   }
 };
 
+const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyMiddleware: (app) => void) => {
+  let serverInstance: any;
+
+  let webSocketProxy;
+  let messageSocket;
+  let wsProxy;
+  let ms;
+  let inspectorProxy;
+
+  const connect = builder.require('connect');
+  const compression = builder.require('compression');
+  const httpProxyMiddleware = builder.require('http-proxy-middleware');
+  const mime = builder.require('mime', builder.require.resolve('webpack-dev-middleware'));
+
+  const app = connect();
+
+  serverInstance = http.createServer(app);
+  mime.define({ 'application/javascript': ['bundle'] }, true);
+  mime.define({ 'application/json': ['assets'] }, true);
+
+  messageSocket = builder.require('react-native/local-cli/server/util/messageSocket.js');
+  webSocketProxy = builder.require('react-native/local-cli/server/util/webSocketProxy.js');
+
+  try {
+    const InspectorProxy = builder.require('react-native/local-cli/server/util/inspectorProxy.js');
+    inspectorProxy = new InspectorProxy();
+  } catch (ignored) {}
+  const copyToClipBoardMiddleware = builder.require(
+    'react-native/local-cli/server/middleware/copyToClipBoardMiddleware'
+  );
+  let cpuProfilerMiddleware;
+  try {
+    cpuProfilerMiddleware = builder.require('react-native/local-cli/server/middleware/cpuProfilerMiddleware');
+  } catch (ignored) {}
+  const getDevToolsMiddleware = builder.require('react-native/local-cli/server/middleware/getDevToolsMiddleware');
+  let heapCaptureMiddleware;
+  try {
+    heapCaptureMiddleware = builder.require('react-native/local-cli/server/middleware/heapCaptureMiddleware.js');
+  } catch (ignored) {}
+  const indexPageMiddleware = builder.require('react-native/local-cli/server/middleware/indexPage');
+  const loadRawBodyMiddleware = builder.require('react-native/local-cli/server/middleware/loadRawBodyMiddleware');
+  const openStackFrameInEditorMiddleware = builder.require(
+    'react-native/local-cli/server/middleware/openStackFrameInEditorMiddleware'
+  );
+  const statusPageMiddleware = builder.require('react-native/local-cli/server/middleware/statusPageMiddleware.js');
+  const systraceProfileMiddleware = builder.require(
+    'react-native/local-cli/server/middleware/systraceProfileMiddleware.js'
+  );
+  const unless = builder.require('react-native/local-cli/server/middleware/unless');
+
+  const args = {
+    port: builder.config.devServer.port,
+    projectRoots: [path.resolve('.')]
+  };
+  app
+    .use(cors())
+    .use(loadRawBodyMiddleware)
+    .use((req, res, next) => {
+      req.path = req.url.split('?')[0];
+      if (req.path === '/symbolicate') {
+        req.rawBody = req.rawBody.replace(/index\.mobile\.delta/g, 'index.mobile.bundle');
+      }
+      const origWriteHead = res.writeHead;
+      res.writeHead = (...parms) => {
+        const code = parms[0];
+        if (code === 404) {
+          logger.error(`404 at URL ${req.url}`);
+        }
+        origWriteHead.apply(res, parms);
+      };
+      if (req.path !== '/onchange') {
+        if (!zen.dev) {
+          logger.debug(`Prod mobile packager request: http://localhost:${builder.config.devServer.port}${req.url}`);
+        } else if (debug.enabled) {
+          logger.debug(`Dev mobile packager request: ${debug.enabled ? req.url : req.path}`);
+        }
+      }
+      next();
+    })
+    .use(compression());
+  app.use('/assets', serveStatic(path.join(builder.require.cwd, '.expo', builder.stack.platform)));
+  if (builder.child) {
+    app.use(serveStatic(builder.child.config.output.path));
+  }
+  app
+    .use((req, res, next) => {
+      if (req.path === '/debugger-ui/deltaUrlToBlobUrl.js') {
+        debug(`serving monkey patched deltaUrlToBlobUrl`);
+        res.writeHead(200, { 'Content-Type': 'application/javascript' });
+        res.end(`window.deltaUrlToBlobUrl = function(url) { return url.replace('.delta', '.bundle'); }`);
+      } else {
+        next();
+      }
+    })
+    .use(
+      '/debugger-ui',
+      serveStatic(
+        path.join(
+          path.dirname(builder.require.resolve('react-native/package.json')),
+          '/local-cli/server/util/debugger-ui'
+        )
+      )
+    )
+    .use(getDevToolsMiddleware(args, () => wsProxy && wsProxy.isChromeConnected()))
+    .use(getDevToolsMiddleware(args, () => ms && ms.isChromeConnected()));
+
+  app
+    .use(openStackFrameInEditorMiddleware(args))
+    .use(copyToClipBoardMiddleware)
+    .use(statusPageMiddleware)
+    .use(systraceProfileMiddleware)
+    .use(indexPageMiddleware)
+    .use(debugMiddleware);
+  if (heapCaptureMiddleware) {
+    app.use(heapCaptureMiddleware);
+  }
+  if (cpuProfilerMiddleware) {
+    app.use(cpuProfilerMiddleware);
+  }
+  if (inspectorProxy) {
+    app.use(unless('/inspector', inspectorProxy.processRequest.bind(inspectorProxy)));
+  }
+
+  app.use((req, res, next) => {
+    if (builder.stack.platform !== 'web') {
+      // Workaround for Expo Client bug in parsing Content-Type header with charset
+      const origSetHeader = res.setHeader;
+      res.setHeader = (key, value) => {
+        let val = value;
+        if (key === 'Content-Type' && value.indexOf('application/javascript') >= 0) {
+          val = value.split(';')[0];
+        }
+        origSetHeader.call(res, key, val);
+      };
+    }
+    next();
+  });
+  applyMiddleware(app);
+
+  if (builder.config.devServer.proxy) {
+    Object.keys(builder.config.devServer.proxy).forEach(key => {
+      app.use(httpProxyMiddleware(key, builder.config.devServer.proxy[key]));
+    });
+  }
+
+  serverInstance.timeout = 0;
+  serverInstance.keepAliveTimeout = 0;
+
+  return new Promise(resolve =>
+    serverInstance.listen(builder.config.devServer.port, () => {
+      if (builder.platform !== 'web') {
+        wsProxy = webSocketProxy.attachToServer(serverInstance, '/debugger-proxy');
+        ms = messageSocket.attachToServer(serverInstance, '/message');
+        webSocketProxy.attachToServer(serverInstance, '/devtools');
+        if (inspectorProxy) {
+          inspectorProxy.attachToServer(serverInstance, '/inspector');
+        }
+      }
+      resolve(serverInstance);
+    })
+  );
+};
+
 const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, reporter, logger) => {
   const webpack = builder.require('webpack');
 
@@ -467,18 +630,12 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
     }
   });
 
-  let serverInstance: any;
-
-  let webSocketProxy;
-  let messageSocket;
-  let wsProxy;
-  let ms;
-  let inspectorProxy;
+  let serverPromise;
 
   if (platform === 'web') {
     const WebpackDevServer = builder.require('webpack-dev-server');
 
-    serverInstance = new WebpackDevServer(compiler, {
+    const serverInstance = new WebpackDevServer(compiler, {
       ...config.devServer,
       reporter: (opts1, opts2) => {
         const opts = opts2 || opts1;
@@ -491,55 +648,20 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
         reporter(null, stats);
       }
     });
+    serverPromise = new Promise(resolve => {
+      serverInstance.listen(builder.config.devServer.port, () => {
+        resolve(serverInstance);
+      });
+    });
   } else {
-    const connect = builder.require('connect');
-    const compression = builder.require('compression');
-    const httpProxyMiddleware = builder.require('http-proxy-middleware');
-    const mime = builder.require('mime', builder.require.resolve('webpack-dev-middleware'));
-    const webpackDevMiddleware = builder.require('webpack-dev-middleware');
     const webpackHotMiddleware = builder.require('webpack-hot-middleware');
-
-    const app = connect();
-
-    serverInstance = http.createServer(app);
-    mime.define({ 'application/javascript': ['bundle'] }, true);
-    mime.define({ 'application/json': ['assets'] }, true);
-
-    messageSocket = builder.require('react-native/local-cli/server/util/messageSocket.js');
-    webSocketProxy = builder.require('react-native/local-cli/server/util/webSocketProxy.js');
-
-    try {
-      const InspectorProxy = builder.require('react-native/local-cli/server/util/inspectorProxy.js');
-      inspectorProxy = new InspectorProxy();
-    } catch (ignored) {}
-    const copyToClipBoardMiddleware = builder.require(
-      'react-native/local-cli/server/middleware/copyToClipBoardMiddleware'
-    );
-    let cpuProfilerMiddleware;
-    try {
-      cpuProfilerMiddleware = builder.require('react-native/local-cli/server/middleware/cpuProfilerMiddleware');
-    } catch (ignored) {}
-    const getDevToolsMiddleware = builder.require('react-native/local-cli/server/middleware/getDevToolsMiddleware');
-    let heapCaptureMiddleware;
-    try {
-      heapCaptureMiddleware = builder.require('react-native/local-cli/server/middleware/heapCaptureMiddleware.js');
-    } catch (ignored) {}
-    const indexPageMiddleware = builder.require('react-native/local-cli/server/middleware/indexPage');
-    const loadRawBodyMiddleware = builder.require('react-native/local-cli/server/middleware/loadRawBodyMiddleware');
-    const openStackFrameInEditorMiddleware = builder.require(
-      'react-native/local-cli/server/middleware/openStackFrameInEditorMiddleware'
-    );
-    const statusPageMiddleware = builder.require('react-native/local-cli/server/middleware/statusPageMiddleware.js');
-    const systraceProfileMiddleware = builder.require(
-      'react-native/local-cli/server/middleware/systraceProfileMiddleware.js'
-    );
-    const unless = builder.require('react-native/local-cli/server/middleware/unless');
+    const webpackDevMiddleware = builder.require('webpack-dev-middleware');
 
     // Workaround for bug in Haul /symbolicate under Windows
     compiler.options.output.path = path.sep;
     const devMiddleware = webpackDevMiddleware(
       compiler,
-      _.merge({}, config.devServer, {
+      _.merge({}, builder.config.devServer, {
         reporter(mwOpts, { state, stats }) {
           if (state) {
             logger.info('bundle is now VALID.');
@@ -551,88 +673,10 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
       })
     );
 
-    const args = {
-      port: config.devServer.port,
-      projectRoots: [path.resolve('.')]
-    };
-    app
-      .use(cors())
-      .use(loadRawBodyMiddleware)
-      .use((req, res, next) => {
-        req.path = req.url.split('?')[0];
-        if (req.path === '/symbolicate') {
-          req.rawBody = req.rawBody.replace(/index\.mobile\.delta/g, 'index.mobile.bundle');
-        }
-        const origWriteHead = res.writeHead;
-        res.writeHead = (...parms) => {
-          const code = parms[0];
-          if (code === 404) {
-            logger.error(`404 at URL ${req.url}`);
-          }
-          origWriteHead.apply(res, parms);
-        };
-        if (debug.enabled && req.path !== '/onchange') {
-          logger.debug(`Dev mobile packager request: ${debug.enabled ? req.url : req.path}`);
-        }
-        next();
-      })
-      .use((req, res, next) => {
-        const query = url.parse(req.url, true).query;
-        const urlPlatform = query && query.platform;
-        if (urlPlatform && urlPlatform !== builder.stack.platform) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end(`Serving '${builder.stack.platform}' bundles, but got request from '${urlPlatform}'`);
-        } else {
-          next();
-        }
-      })
-      .use(compression());
-    app.use('/assets', serveStatic(path.join(builder.require.cwd, '.expo', builder.stack.platform)));
-    if (builder.child) {
-      app.use(serveStatic(builder.child.config.output.path));
-    }
-    app
-      .use((req, res, next) => {
-        if (req.path === '/debugger-ui/deltaUrlToBlobUrl.js') {
-          debug(`serving monkey patched deltaUrlToBlobUrl`);
-          res.writeHead(200, { 'Content-Type': 'application/javascript' });
-          res.end(`window.deltaUrlToBlobUrl = function(url) { return url.replace('.delta', '.bundle'); }`);
-        } else {
-          next();
-        }
-      })
-      .use(
-        '/debugger-ui',
-        serveStatic(
-          path.join(
-            path.dirname(builder.require.resolve('react-native/package.json')),
-            '/local-cli/server/util/debugger-ui'
-          )
-        )
-      )
-      .use(getDevToolsMiddleware(args, () => wsProxy && wsProxy.isChromeConnected()))
-      .use(getDevToolsMiddleware(args, () => ms && ms.isChromeConnected()))
-      .use(liveReloadMiddleware(compiler))
-      .use(symbolicateMiddleware(compiler, logger))
-      .use(openStackFrameInEditorMiddleware(args))
-      .use(copyToClipBoardMiddleware)
-      .use(statusPageMiddleware)
-      .use(systraceProfileMiddleware)
-      .use(indexPageMiddleware)
-      .use(debugMiddleware);
-    if (heapCaptureMiddleware) {
-      app.use(heapCaptureMiddleware);
-    }
-    if (cpuProfilerMiddleware) {
-      app.use(cpuProfilerMiddleware);
-    }
-    if (inspectorProxy) {
-      app.use(unless('/inspector', inspectorProxy.processRequest.bind(inspectorProxy)));
-    }
-
-    app
-      .use((req, res, next) => {
-        if (platform !== 'web') {
+    serverPromise = startReactNativeServer(builder, zen, logger, app => {
+      app.use(liveReloadMiddleware(compiler)).use(symbolicateMiddleware(compiler, logger));
+      app.use((req, res, next) => {
+        if (builder.stack.platform !== 'web') {
           // Workaround for Expo Client bug in parsing Content-Type header with charset
           const origSetHeader = res.setHeader;
           res.setHeader = (key, value) => {
@@ -642,31 +686,22 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
             }
             origSetHeader.call(res, key, val);
           };
+          const query = url.parse(req.url, true).query;
+          const urlPlatform = query && query.platform;
+          if (urlPlatform && urlPlatform !== builder.stack.platform) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end(`Serving '${builder.stack.platform}' bundles, but got request from '${urlPlatform}'`);
+            return;
+          }
         }
         return devMiddleware(req, res, next);
-      })
-      .use(webpackHotMiddleware(compiler, { log: false }));
-
-    if (config.devServer.proxy) {
-      Object.keys(config.devServer.proxy).forEach(key => {
-        app.use(httpProxyMiddleware(key, config.devServer.proxy[key]));
       });
-    }
+      app.use(webpackHotMiddleware(compiler, { log: false }));
+    });
   }
-
-  logger.info(`Webpack dev server listening on http://localhost:${config.devServer.port}`);
-  serverInstance.listen(config.devServer.port, () => {
-    if (platform !== 'web') {
-      wsProxy = webSocketProxy.attachToServer(serverInstance, '/debugger-proxy');
-      ms = messageSocket.attachToServer(serverInstance, '/message');
-      webSocketProxy.attachToServer(serverInstance, '/devtools');
-      if (inspectorProxy) {
-        inspectorProxy.attachToServer(serverInstance, '/inspector');
-      }
-    }
+  serverPromise.then(() => {
+    logger.info(`Webpack dev server listening on http://localhost:${config.devServer.port}`);
   });
-  serverInstance.timeout = 0;
-  serverInstance.keepAliveTimeout = 0;
 };
 
 const isDllValid = (zen, builder, logger): boolean => {
@@ -950,31 +985,18 @@ const allocateExpoPorts = async expoPlatforms => {
 };
 
 const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Builders, expCmd: string, logger) => {
-  const connect = mainBuilder.require('connect');
   const mime = mainBuilder.require('mime', mainBuilder.require.resolve('webpack-dev-middleware'));
-  const compression = mainBuilder.require('compression');
-  const statusPageMiddleware = mainBuilder.require('react-native/local-cli/server/middleware/statusPageMiddleware.js');
   const { UrlUtils } = mainBuilder.require('xdl');
-
-  mime.define({ 'application/javascript': ['bundle'] }, true);
-  mime.define({ 'application/json': ['assets'] }, true);
 
   logger.info(`Starting Expo prod server`);
   const packagerPort = 3030;
+  mainBuilder.config.devServer.port = packagerPort;
 
-  const app = connect();
-  app
-    .use((req, res, next) => {
-      req.path = req.url.split('?')[0];
-      if (req.path !== '/onchange') {
-        logger.debug(`Prod mobile packager request: http://localhost:${packagerPort}${req.url}`);
+  await startReactNativeServer(mainBuilder, zen, logger, app => {
+    app.use((req, res, next) => {
+      if (req.path === '/onchange') {
+        return;
       }
-      next();
-    })
-    .use(statusPageMiddleware)
-    .use(compression())
-    .use(debugMiddleware)
-    .use((req, res, next) => {
       const platform = url.parse(req.url, true).query.platform;
       if (platform) {
         let platformFound: boolean = false;
@@ -1005,18 +1027,9 @@ const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Bui
         next();
       }
     });
-
-  const serverInstance: any = http.createServer(app);
-
-  await new Promise((resolve, reject) => {
-    serverInstance.listen(packagerPort, () => {
-      logger.info(`Production mobile packager listening on http://localhost:${packagerPort}`);
-      resolve();
-    });
   });
 
-  serverInstance.timeout = 0;
-  serverInstance.keepAliveTimeout = 0;
+  logger.info(`Production mobile packager listening on http://localhost:${packagerPort}`);
 
   const projectRoot = path.join(path.resolve('.'), '.expo', 'all');
   await startExpoServer(zen, mainBuilder, projectRoot, packagerPort);
