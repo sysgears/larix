@@ -168,8 +168,8 @@ const createPlugins = (builder: Builder, zen: Zen) => {
   return plugins;
 };
 
-const findNodeModulesDirs = () =>
-  upDirs(path.resolve('.'), 'node_modules').reduce((res, dir) => res.concat(fs.existsSync(dir) ? [dir] : []), []);
+const findNodeModulesDirs = (cwd: string) =>
+  upDirs(cwd, 'node_modules').reduce((res, dir) => res.concat(fs.existsSync(dir) ? [dir] : []), []);
 
 const findNodeModule = (name, nodeModulesDirs) => {
   for (const dir of nodeModulesDirs) {
@@ -181,7 +181,7 @@ const findNodeModule = (name, nodeModulesDirs) => {
 };
 
 const getDepsForNode = (zen: Zen, builder: Builder): string[] => {
-  const nodeModulesDirs = findNodeModulesDirs();
+  const nodeModulesDirs = findNodeModulesDirs(builder.require.cwd);
   const pkg = builder.require('./package.json');
   const deps = [];
   for (const key of Object.keys(pkg.dependencies)) {
