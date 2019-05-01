@@ -58,6 +58,7 @@ You can follow to the documentation to learn more about Zen:
 
 * [Concepts]
 * [Configuration]
+* [Programmatic Usage]
 * [How Zen Works]
 * [Zen Scripts]
 
@@ -92,6 +93,7 @@ Copyright © 2018-2019 [SysGears (Cyprus) Limited]. This source code is licensed
 [Concepts]: https://github.com/sysgears/larix/blob/master/packages/zen/docs/concepts.md
 [Configuration]: https://github.com/sysgears/larix/blob/master/packages/zen/docs/configuration.md
 [How Zen Works]: https://github.com/sysgears/larix/blob/master/packages/zen/docs/howZenWorks.md
+[Programmatic Usage]: https://github.com/sysgears/larix/blob/master/packages/zen/docs/programmatic.md
 [Zen Scripts]: https://github.com/sysgears/larix/blob/master/packages/zen/docs/scripts.md
 [Gitter channel]: https://gitter.im/sysgears/zen
 [GitHub issues]: https://github.com/sysgears/larix/issues
