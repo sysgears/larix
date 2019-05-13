@@ -789,7 +789,7 @@ const buildDll = (zen: Zen, builder: Builder) => {
             if (filename.indexOf(' ') < 0 && filename.indexOf('@virtual') < 0) {
               meta.hashes[filename] = crypto
                 .createHash('md5')
-                .update(fs.readFileSync(filename))
+                .update(fs.readFileSync(filename.split('!').pop()))
                 .digest('hex');
             }
           }

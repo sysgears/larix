@@ -19,7 +19,7 @@ export default class CssProcessorPlugin implements ConfigPlugin {
     const dev = zen.dev;
     const loaderOptions = builder.sourceMap ? { sourceMap: true } : {};
 
-    if (stack.hasAll('webpack') && !stack.hasAny('dll')) {
+    if (stack.hasAll('webpack')) {
       let createRule;
       const rules = [];
       const postCssLoader = builder.require.probe('postcss-loader') ? 'postcss-loader' : undefined;
