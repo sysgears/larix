@@ -135,10 +135,13 @@ export default (pkgJsonPath: string): object => {
 
     let config;
     const builderDefaults: any = {
-      silent: true,
-      nodeDebugger: false,
       infered: true
     };
+    const optionDefaults: any = {
+      silent: true,
+      nodeDebugger: false
+    };
+
     if (entry) {
       builderDefaults.entry = entry;
     }
@@ -161,6 +164,7 @@ export default (pkgJsonPath: string): object => {
           ios: builderIOS
         },
         options: {
+          ...optionDefaults,
           defines: {
             __DEV__: process.env.NODE_ENV !== 'production'
           }
@@ -179,6 +183,9 @@ export default (pkgJsonPath: string): object => {
               __TEST__: true
             }
           }
+        },
+        options: {
+          ...optionDefaults
         }
       };
       if (platform) {

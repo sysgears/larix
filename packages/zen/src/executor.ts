@@ -727,7 +727,8 @@ const isDllValid = (zen, builder, logger): boolean => {
 
     const json = JSON.parse(fs.readFileSync(path.join(builder.dllBuildDir, `${name}_dll.json`)).toString());
 
-    for (const filename of Object.keys(json.content)) {
+    for (const entryFilename of Object.keys(json.content)) {
+      const filename = entryFilename.split('!').pop();
       if (filename.indexOf(' ') < 0 && filename.indexOf('@virtual') < 0) {
         if (!fs.existsSync(filename)) {
           logger.warn(`${name} DLL need to be regenerated, file: ${filename} is missing.`);

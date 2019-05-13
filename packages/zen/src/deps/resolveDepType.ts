@@ -47,11 +47,30 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
         }
         if (moduleType === ModuleType.NormalNodeModule) {
           let entryFileText;
+          let modulePath;
           try {
-            entryFileText = fs.readFileSync(requireDep.resolve(pkgName), 'utf8');
+            modulePath = requireDep.resolve(pkgName);
           } catch (e) {}
-          if (entryFileText && entryFileText.indexOf('__esModule') < 0 && /^(export|import)[\s]/m.test(entryFileText)) {
-            moduleType = ModuleType.TranspiledNodeModule;
+          if (!modulePath) {
+            try {
+              const pkgJson = requireDep(pkgName + '/package.json');
+              if (pkgJson.module) {
+                modulePath = pkgJson.module;
+                moduleType = ModuleType.TranspiledNodeModule;
+              }
+            } catch (e) {}
+          }
+          if (modulePath && moduleType === ModuleType.NormalNodeModule) {
+            try {
+              entryFileText = fs.readFileSync(modulePath, 'utf8');
+            } catch (e) {}
+            if (
+              entryFileText &&
+              entryFileText.indexOf('__esModule') < 0 &&
+              /^(export|import)[\s]/m.test(entryFileText)
+            ) {
+              moduleType = ModuleType.TranspiledNodeModule;
+            }
           }
         }
         resolvePackagesCache[pkgPath] = {
@@ -64,7 +83,9 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
         realPath: path.join(resolvedPkg.realPath, depPath.substr(pkgPathEnd + 1)),
         moduleType: resolvedPkg.moduleType
       };
-      // console.log(resolveModulesCache[modulePath]);
+      if (pkgPath.indexOf('monaco-editor') >= 0) {
+        console.log(depPath, resolveModulesCache[depPath].moduleType);
+      }
     }
     return resolveModulesCache[depPath];
   } else {
