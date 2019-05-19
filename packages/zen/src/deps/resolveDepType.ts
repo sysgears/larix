@@ -83,9 +83,9 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
         realPath: path.join(resolvedPkg.realPath, depPath.substr(pkgPathEnd + 1)),
         moduleType: resolvedPkg.moduleType
       };
-      if (pkgPath.indexOf('monaco-editor') >= 0) {
-        console.log(depPath, resolveModulesCache[depPath].moduleType);
-      }
+      // if (pkgPath.indexOf('monaco-editor') >= 0) {
+      //   console.log(depPath, resolveModulesCache[depPath].moduleType);
+      // }
     }
     return resolveModulesCache[depPath];
   } else {
