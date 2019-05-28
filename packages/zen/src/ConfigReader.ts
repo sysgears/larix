@@ -119,12 +119,12 @@ export default class ConfigReader {
           builderOverrides
         );
         if (typeof config.options.stack === 'undefined' && typeof builder.stack === 'undefined') {
-          if (derivedConfig.builders[name]) {
+          if (derivedConfig.builders && derivedConfig.builders[name]) {
             builder = this.zen.merge(derivedConfig.builders[name], builder);
           } else {
             throw new Error(
               `builder has no stack defined.\nIf this is your custom builder, you must define 'stack'\nIf you mean to override options for infered builder, specify its name as a key from the list: ${JSON.stringify(
-                Object.keys(derivedConfig.builders)
+                Object.keys(derivedConfig.builders || {})
               )}`
             );
           }

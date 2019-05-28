@@ -90,18 +90,18 @@ export default class JSRuleFinder {
     const jsTestStr = String(this.jsRule ? this.jsRule.test : 'js');
     const tsTestStr = String(this.tsRule ? this.tsRule.test : '');
 
-    if (jsTestStr.indexOf('jsx') >= 0) {
-      result.push('jsx');
-    }
-    if (tsTestStr.indexOf('tsx') >= 0) {
-      result.push('tsx');
-    }
     if (jsTestStr.indexOf('js') >= 0) {
       result.push('mjs');
       result.push('js');
     }
+    if (jsTestStr.indexOf('jsx') >= 0) {
+      result.push('jsx');
+    }
     if (tsTestStr.indexOf('ts') >= 0) {
       result.push('ts');
+    }
+    if (tsTestStr.indexOf('tsx') >= 0) {
+      result.push('tsx');
     }
     return result;
   }
