@@ -1,4 +1,4 @@
-import * as connect from 'connect';
+import connect from 'connect';
 import http from 'http';
 import * as streams from 'memory-streams';
 import * as tar from 'tar-stream';

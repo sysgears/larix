@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2017",
+    "esModuleInterop": true,
     "module": "commonjs",
     "lib": ["es2016"],
     "moduleResolution": "node",
     "sourceMap": true,
     "declaration": true,
     "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "pretty": true,
     "removeComments": true
@@ -15,5 +15,9 @@
   "exclude": [
     "node_modules",
     "lib"
+  ],
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/types/**/*"
   ]
 }

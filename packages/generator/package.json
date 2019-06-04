@@ -16,8 +16,8 @@
   "homepage": "https://github.com/sysgears/larix/tree/master/packages/generator#readme",
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -p tsconfig.json -w",
+    "build": "pnpify tsc",
+    "watch": "pnpify tsc -w",
     "lint": "tslint -p tsconfig.json --fix -c ../../tslint.json",
     "tests": "jest",
     "test": "yarn tests && yarn lint",
@@ -41,24 +41,10 @@
     "validate-npm-package-name": "^3.0.0"
   },
   "devDependencies": {
+    "@berry/pnpify": "^0.0.4",
     "@types/humps": "^1.1.2",
-    "@types/mustache": "^0.8.30"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json"
-    ]
-  },
-  "prettier": {
-    "printWidth": 120,
-    "singleQuote": true,
-    "parser": "babylon"
+    "@types/mustache": "^0.8.30",
+    "rimraf": "^2.6.2",
+    "typescript": "^3.3.3"
   }
 }

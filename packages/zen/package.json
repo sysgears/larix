@@ -4,8 +4,8 @@
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf ./lib",
-    "build": "tsc",
-    "watch": "tsc -w",
+    "build": "pnpify tsc",
+    "watch": "pnpify tsc -w",
     "lint": "tslint --fix -p tsconfig.json -c tslint.json",
     "tests": "jest",
     "tests:watch": "jest --watch",
@@ -29,31 +29,7 @@
     "webpack.config.js",
     "zen.config.js"
   ],
-  "bin": {
-    "zen": "./zen.js"
-  },
-  "devDependencies": {
-    "@types/inquirer": "^0.0.35",
-    "@types/ip": "^0.0.30",
-    "@types/lodash": "^4.14.71",
-    "@types/mkdirp": "^0.5.0",
-    "@types/webpack": "^3.0.10",
-    "@types/webpack-sources": "^0.1.2",
-    "@types/yargs": "^8.0.2",
-    "husky": "^0.14.3",
-    "lint-staged": "^4.1.3",
-    "rimraf": "^2.6.2"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "tslint --fix",
-      "git add"
-    ],
-    "*.{json}": [
-      "prettier --write",
-      "git add"
-    ]
-  },
+  "bin": "./zen.js",
   "dependencies": {
     "connect-cors": "^0.5.6",
     "debug": "^3.1.0",
@@ -76,29 +52,18 @@
     "webpack-sources": "^1.0.1",
     "yargs": "^8.0.2"
   },
-  "prettier": {
-    "printWidth": 120,
-    "singleQuote": true,
-    "parser": "babylon"
-  },
-  "jest": {
-    "transform": {
-      ".ts": "ts-jest"
-    },
-    "testPathIgnorePatterns": [
-      "node_modules",
-      ".history"
-    ],
-    "testRegex": "(/__tests__/.*\\.(test|spec))\\.(ts|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "js",
-      "json"
-    ],
-    "globals": {
-      "ts-jest": {
-        "tsConfig": "tsconfig.json"
-      }
-    }
+  "devDependencies": {
+    "@berry/pnpify": "^0.0.4",
+    "@types/inquirer": "^0.0.35",
+    "@types/ip": "^0.0.30",
+    "@types/lodash": "^4.14.71",
+    "@types/mkdirp": "^0.5.0",
+    "@types/webpack": "^3.0.10",
+    "@types/webpack-sources": "^0.1.2",
+    "@types/yargs": "^8.0.2",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.1.3",
+    "rimraf": "^2.6.2",
+    "typescript": "^3.3.3"
   }
 }
