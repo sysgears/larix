@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as fs from 'fs-extra';
-import * as gunzip from 'gunzip-maybe';
+import gunzip from 'gunzip-maybe';
 import * as path from 'path';
 import * as tar from 'tar-stream';
 import * as tmp from 'tmp';

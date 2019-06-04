@@ -2,7 +2,7 @@
 /.history
 /.npmrc
 node_modules
-lib
+/packages/**/lib
 package-lock.json
 .idea
 .npmrc

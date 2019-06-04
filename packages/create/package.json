@@ -15,42 +15,28 @@
   },
   "homepage": "https://github.com/sysgears/larix/tree/master/packages/create#readme",
   "scripts": {
-    "clean": "rm -rf ./lib",
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -p tsconfig.json -w",
+    "clean": "rimraf ./lib",
+    "build": "pnpify tsc",
+    "watch": "pnpify tsc -w",
     "lint": "tslint -p tsconfig.json --fix -c ../../tslint.json",
     "tests": "jest --passWithNoTests",
     "test": "yarn tests && yarn lint",
     "prepublishOnly": "yarn clean && yarn build"
   },
-  "bin": {
-    "create": "create-larix-app.js"
-  },
+  "bin": "create-larix-app.js",
   "files": [
     "create-larix-app.js",
     "lib",
     "templates"
   ],
-  "prettier": {
-    "printWidth": 120,
-    "singleQuote": true,
-    "parser": "babel"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json"
-    ]
-  },
   "dependencies": {
     "@larix/generator": ">= 0.1.4",
     "chalk": "^2.4.1",
     "source-map-support": "^0.5.6"
+  },
+  "devDependencies": {
+    "@berry/pnpify": "^0.0.4",
+    "rimraf": "^2.6.2",
+    "typescript": "^3.3.3"
   }
 }
