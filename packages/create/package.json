@@ -30,7 +30,7 @@
     "templates"
   ],
   "dependencies": {
-    "@larix/generator": ">= 0.1.4",
+    "@larix/generator": "workspace:*",
     "chalk": "^2.4.1",
     "source-map-support": "^0.5.6"
   },

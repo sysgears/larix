@@ -514,7 +514,7 @@ __metadata:
   resolution: "@larix/create@workspace:packages/create"
   dependencies:
     "@berry/pnpify": "npm:^0.0.4"
-    "@larix/generator": ">= 0.1.4"
+    "@larix/generator": "workspace:*"
     chalk: "npm:^2.4.1"
     rimraf: "npm:^2.6.2"
     source-map-support: "npm:^0.5.6"
@@ -524,7 +524,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@larix/generator@>= 0.1.4, @larix/generator@workspace:packages/generator":
+"@larix/generator@workspace:*, @larix/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@larix/generator@workspace:packages/generator"
   dependencies:

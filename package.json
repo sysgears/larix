@@ -2,13 +2,13 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "yarn workspaces foreach run --exclude root-workspace-988eec build",
-    "clean": "yarn workspaces foreach run --exclude root-workspace-988eec clean",
+    "build": "yarn workspaces foreach run --topological build",
+    "clean": "yarn workspaces foreach run clean",
     "tests": "jest",
     "tests:watch": "jest --watch",
     "test": "yarn tests && yarn lint",
     "lint": "tslint -p tsconfig.json --fix -c tslint.json",
-    "watch": "yarn workspaces foreach run --exclude root-workspace-988eec watch"
+    "watch": "yarn workspaces foreach run --topological watch"
   },
   "workspaces": [
     "packages/*"

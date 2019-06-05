@@ -172,11 +172,7 @@ exports.default = (clipanion, pluginConfiguration) => clipanion
     var { cwd, args, stdout, command, exclude, include, interlaced, parallel, topological, topologicalDev, verbose, jobs } = _a, env = __rest(_a, ["cwd", "args", "stdout", "command", "exclude", "include", "interlaced", "parallel", "topological", "topologicalDev", "verbose", "jobs"]);
     const configuration = await core_1.Configuration.find(cwd, pluginConfiguration);
     const { project } = await core_1.Project.find(configuration, cwd);
-    let workspaces = project.workspaces.filter(workspace => workspace.manifest.scripts.has(command));
-    console.log(exclude);
-    workspaces.forEach(ws => {
-      console.log(ws.locator.name);
-    });
+    let workspaces = project.workspaces.filter(workspace => workspace.manifest.scripts.has(command) && (command !== process.env.npm_lifecycle_event || workspace.cwd !== cwd));
     if (include.length > 0)
         workspaces = workspaces.filter(workspace => include.includes(workspace.locator.name));
     if (exclude.length > 0)
