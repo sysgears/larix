@@ -6,11 +6,11 @@
 ``` js
 const createConfig = require('@larix/zen').createConfig;
 
-module.exports = function (baseConfig, configType) {
+module.exports = async ({ config, mode }) => {
   return createConfig({
-    cmd: configType === 'DEVELOPMENT' ? 'watch' : 'build',
+    cmd: mode === 'DEVELOPMENT' ? 'watch' : 'build',
     builderOverrides: { stack: ['storybook'] },
-    genConfigOverrides: Object.assign({ merge: { entry: 'replace', output: 'replace' } }, baseConfig)
+    genConfigOverrides: Object.assign({ merge: { entry: 'replace', output: 'replace' } }, config)
   });
 };
 ```
