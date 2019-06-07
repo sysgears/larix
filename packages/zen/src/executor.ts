@@ -300,6 +300,39 @@ const debugMiddleware = (req, res, next) => {
   }
 };
 
+const reactNativeImpl = {
+  community: {
+    messageSocket: '@react-native-community/cli/build/commands/server/messageSocket',
+    webSocketProxy: '@react-native-community/cli/build/commands/server/webSocketProxy',
+    inspectorProxy: undefined,
+    copyToClipBoardMiddleware: '@react-native-community/cli/build/commands/server/middleware/copyToClipBoardMiddleware',
+    cpuProfilerMiddleware: undefined,
+    getDevToolsMiddleware: '@react-native-community/cli/build/commands/server/middleware/getDevToolsMiddleware',
+    heapCaptureMiddleware: undefined,
+    indexPageMiddleware: '@react-native-community/cli/build/commands/server/middleware/indexPage',
+    loadRawBodyMiddleware: '@react-native-community/cli/build/commands/server/middleware/loadRawBodyMiddleware',
+    openStackFrameInEditorMiddleware: '@react-native-community/cli/build/commands/server/middleware/openStackFrameInEditorMiddleware',
+    statusPageMiddleware: '@react-native-community/cli/build/commands/server/middleware/statusPageMiddleware',
+    systraceProfileMiddleware: '@react-native-community/cli/build/commands/server/middleware/systraceProfileMiddleware',
+    unless: '@react-native-community/cli/build/commands/server/middleware/unless'
+  },
+  original: {
+    messageSocket: 'react-native/local-cli/server/util/messageSocket',
+    webSocketProxy: 'react-native/local-cli/server/util/webSocketProxy',
+    inspectorProxy: 'react-native/local-cli/server/util/inspectorProxy',
+    copyToClipBoardMiddleware: 'react-native/local-cli/server/middleware/copyToClipBoardMiddleware',
+    cpuProfilerMiddleware: 'react-native/local-cli/server/middleware/cpuProfilerMiddleware',
+    getDevToolsMiddleware: 'react-native/local-cli/server/middleware/getDevToolsMiddleware',
+    heapCaptureMiddleware: 'react-native/local-cli/server/middleware/heapCaptureMiddleware',
+    indexPageMiddleware: 'react-native/local-cli/server/middleware/indexPage',
+    loadRawBodyMiddleware: 'react-native/local-cli/server/middleware/loadRawBodyMiddleware',
+    openStackFrameInEditorMiddleware: 'react-native/local-cli/server/middleware/openStackFrameInEditorMiddleware',
+    statusPageMiddleware: 'react-native/local-cli/server/middleware/statusPageMiddleware',
+    systraceProfileMiddleware: 'react-native/local-cli/server/middleware/systraceProfileMiddleware',
+    unless: 'react-native/local-cli/server/middleware/unless'
+  }
+}
+
 const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyMiddleware: (app) => void) => {
   let serverInstance: any;
 
@@ -320,35 +353,39 @@ const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyM
   mime.define({ 'application/javascript': ['bundle'] }, true);
   mime.define({ 'application/json': ['assets'] }, true);
 
-  messageSocket = builder.require('react-native/local-cli/server/util/messageSocket.js');
-  webSocketProxy = builder.require('react-native/local-cli/server/util/webSocketProxy.js');
+  const isOriginal = builder.require.probe(reactNativeImpl.original.messageSocket);
+  const rnRequire = isOriginal ? builder.require : name => builder.require(name).default;
+  const rnImpl = isOriginal ? reactNativeImpl.original : reactNativeImpl.community;
+
+  messageSocket = rnRequire(rnImpl.messageSocket);
+  webSocketProxy = rnRequire(rnImpl.webSocketProxy);
 
   try {
-    const InspectorProxy = builder.require('react-native/local-cli/server/util/inspectorProxy.js');
-    inspectorProxy = new InspectorProxy();
+    if (rnImpl.inspectorProxy) {
+      const InspectorProxy = rnRequire(rnImpl.inspectorProxy);
+      inspectorProxy = new InspectorProxy();
+    }
   } catch (ignored) {}
-  const copyToClipBoardMiddleware = builder.require(
-    'react-native/local-cli/server/middleware/copyToClipBoardMiddleware'
-  );
+  const copyToClipBoardMiddleware = rnRequire(rnImpl.copyToClipBoardMiddleware);
   let cpuProfilerMiddleware;
   try {
-    cpuProfilerMiddleware = builder.require('react-native/local-cli/server/middleware/cpuProfilerMiddleware');
+    if (rnImpl.cpuProfilerMiddleware) {
+      cpuProfilerMiddleware = rnRequire(rnImpl.cpuProfilerMiddleware);
+    }
   } catch (ignored) {}
-  const getDevToolsMiddleware = builder.require('react-native/local-cli/server/middleware/getDevToolsMiddleware');
+  const getDevToolsMiddleware = rnRequire(rnImpl.getDevToolsMiddleware);
   let heapCaptureMiddleware;
   try {
-    heapCaptureMiddleware = builder.require('react-native/local-cli/server/middleware/heapCaptureMiddleware.js');
+    if (rnImpl.heapCaptureMiddleware) {
+      heapCaptureMiddleware = rnRequire(rnImpl.heapCaptureMiddleware);
+    }
   } catch (ignored) {}
-  const indexPageMiddleware = builder.require('react-native/local-cli/server/middleware/indexPage');
-  const loadRawBodyMiddleware = builder.require('react-native/local-cli/server/middleware/loadRawBodyMiddleware');
-  const openStackFrameInEditorMiddleware = builder.require(
-    'react-native/local-cli/server/middleware/openStackFrameInEditorMiddleware'
-  );
-  const statusPageMiddleware = builder.require('react-native/local-cli/server/middleware/statusPageMiddleware.js');
-  const systraceProfileMiddleware = builder.require(
-    'react-native/local-cli/server/middleware/systraceProfileMiddleware.js'
-  );
-  const unless = builder.require('react-native/local-cli/server/middleware/unless');
+  const indexPageMiddleware = rnRequire(rnImpl.indexPageMiddleware);
+  const loadRawBodyMiddleware = rnRequire(rnImpl.loadRawBodyMiddleware);
+  const openStackFrameInEditorMiddleware = rnRequire(rnImpl.openStackFrameInEditorMiddleware);
+  const statusPageMiddleware = rnRequire(rnImpl.statusPageMiddleware);
+  const systraceProfileMiddleware = rnRequire(rnImpl.systraceProfileMiddleware);
+  const unless = rnRequire(rnImpl.unless);
 
   const args = {
     port: builder.config.devServer.port,
@@ -397,9 +434,12 @@ const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyM
     .use(
       '/debugger-ui',
       serveStatic(
-        path.join(
+        isOriginal ? path.join(
           path.dirname(builder.require.resolve('react-native/package.json')),
           '/local-cli/server/util/debugger-ui'
+        ) :         path.join(
+          path.dirname(builder.require.resolve('@react-native-community/cli/package.json')),
+          '/build/commands/server/debugger-ui'
         )
       )
     )
