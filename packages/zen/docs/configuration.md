@@ -573,7 +573,7 @@ const config = {
 Sets the local port used by webpack-dev-server to host the files.
 
 **Type**: `Number` <br />
-**Default**: `8080`
+**Default**: `3000`
 
 Usage example:
 
