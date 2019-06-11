@@ -281,7 +281,6 @@ const startServerWebpack = (zen, builder) => {
 };
 
 const openFrontend = (zen, builder, logger) => {
-  const opn = builder.require.probe('opn') ? builder.require('opn') : null;
   try {
     if (builder.stack.hasAny('react-native')) {
       startExpoProject(zen, builder, logger);
@@ -656,10 +655,14 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
       }
       fs.writeFileSync(path.join(dir, 'assets.json'), JSON.stringify(assetsMap));
     }
+    if (stats.compilation.assets['loadable-stats.json']) {
+      fs.writeFileSync(path.join(dir, 'loadable-stats.json'), stats.compilation.assets['loadable-stats.json'].source());
+    }
     if (frontendFirstStart) {
       frontendFirstStart = false;
       openFrontend(zen, builder, logger);
     }
+    console.log('open:', config.devServer.open);
   });
 
   let serverPromise;

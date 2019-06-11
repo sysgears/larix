@@ -111,7 +111,7 @@ const createBuilders = ({
       builder.enabled = true;
     }
 
-    if (builder.enabled && (!cluster.isMaster || ['exp', 'test'].indexOf(cmd) >= 0)) {
+    if (builder.enabled) {
       builder.projectRoot = getProjectRoot(builder.require.cwd);
     }
 

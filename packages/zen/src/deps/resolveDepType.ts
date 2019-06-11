@@ -20,6 +20,9 @@ const resolveModulesCache: { [modulePath: string]: ResolveResult } = {};
 const KNOWN_RN_PACKAGES = [/expo.*/, /@expo.*/, /react-navigation.*/, /react-native.*/];
 
 export default (depPath: string, projectRoot: string, requireDep: RequireFunction): ResolveResult => {
+  if (!projectRoot) {
+    throw new Error('Project root undefined!');
+  }
   const idx = depPath.lastIndexOf(path.sep + 'node_modules' + path.sep);
   if (idx >= 0) {
     if (resolveModulesCache[depPath] === undefined) {
@@ -83,9 +86,6 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
         realPath: path.join(resolvedPkg.realPath, depPath.substr(pkgPathEnd + 1)),
         moduleType: resolvedPkg.moduleType
       };
-      // if (pkgPath.indexOf('monaco-editor') >= 0) {
-      //   console.log(depPath, resolveModulesCache[depPath].moduleType);
-      // }
     }
     return resolveModulesCache[depPath];
   } else {

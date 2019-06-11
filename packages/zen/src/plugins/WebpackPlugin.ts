@@ -381,17 +381,6 @@ const createConfig = (builder: Builder, zen: Zen) => {
     }
   }
 
-  if (stack.hasAny('web') && webpackVer >= 4) {
-    config = {
-      ...config,
-      output: {
-        ...config.output,
-        libraryTarget: 'umd',
-        globalObject: "(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this)"
-      }
-    };
-  }
-
   if (stack.hasAny('dll')) {
     const name = getDllName(builder);
     config = {
@@ -483,6 +472,7 @@ const createConfig = (builder: Builder, zen: Zen) => {
         output: {
           ...config.output,
           filename: '[name].[hash].js',
+          chunkFilename: '[name].[chunkhash].js',
           path: builder.buildDir
             ? path.join(builder.require.cwd, builder.buildDir)
             : path.join(builder.require.cwd, builder.frontendBuildDir || 'build/client', 'web'),
