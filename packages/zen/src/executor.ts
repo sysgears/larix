@@ -118,6 +118,8 @@ const webpackReporter = (zen: Zen, builder: Builder, outputPath: string, log, er
   if (err) {
     log.error(err.stack);
     throw new Error('Build error');
+  } else if (stats.compilation.errors && stats.compilation.errors.length && !zen.watch) {
+    throw new Error('Compilation error');
   }
   if (stats) {
     const str = stats.toString(builder.config.stats);
@@ -310,7 +312,8 @@ const reactNativeImpl = {
     heapCaptureMiddleware: undefined,
     indexPageMiddleware: '@react-native-community/cli/build/commands/server/middleware/indexPage',
     loadRawBodyMiddleware: '@react-native-community/cli/build/commands/server/middleware/loadRawBodyMiddleware',
-    openStackFrameInEditorMiddleware: '@react-native-community/cli/build/commands/server/middleware/openStackFrameInEditorMiddleware',
+    openStackFrameInEditorMiddleware:
+      '@react-native-community/cli/build/commands/server/middleware/openStackFrameInEditorMiddleware',
     statusPageMiddleware: '@react-native-community/cli/build/commands/server/middleware/statusPageMiddleware',
     systraceProfileMiddleware: '@react-native-community/cli/build/commands/server/middleware/systraceProfileMiddleware',
     unless: '@react-native-community/cli/build/commands/server/middleware/unless'
@@ -330,7 +333,7 @@ const reactNativeImpl = {
     systraceProfileMiddleware: 'react-native/local-cli/server/middleware/systraceProfileMiddleware',
     unless: 'react-native/local-cli/server/middleware/unless'
   }
-}
+};
 
 const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyMiddleware: (app) => void) => {
   let serverInstance: any;
@@ -433,13 +436,15 @@ const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyM
     .use(
       '/debugger-ui',
       serveStatic(
-        isOriginal ? path.join(
-          path.dirname(builder.require.resolve('react-native/package.json')),
-          '/local-cli/server/util/debugger-ui'
-        ) :         path.join(
-          path.dirname(builder.require.resolve('@react-native-community/cli/package.json')),
-          '/build/commands/server/debugger-ui'
-        )
+        isOriginal
+          ? path.join(
+              path.dirname(builder.require.resolve('react-native/package.json')),
+              '/local-cli/server/util/debugger-ui'
+            )
+          : path.join(
+              path.dirname(builder.require.resolve('@react-native-community/cli/package.json')),
+              '/build/commands/server/debugger-ui'
+            )
       )
     )
     .use(getDevToolsMiddleware(args, () => wsProxy && wsProxy.isChromeConnected()))

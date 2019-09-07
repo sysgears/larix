@@ -11,8 +11,7 @@ const getProjectRoot = (cwd: string): string => {
       try {
         JSON.parse(fs.readFileSync(pkg, 'utf8'));
         projectRoot = path.dirname(pkg);
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
   return projectRoot;

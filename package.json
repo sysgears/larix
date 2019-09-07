@@ -1,4 +1,5 @@
 {
+  "name": "@larix/monorepo",
   "private": true,
   "license": "MIT",
   "scripts": {
