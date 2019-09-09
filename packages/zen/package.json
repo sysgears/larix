@@ -1,6 +1,6 @@
 {
   "name": "@larix/zen",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "main": "./src/boot-dev.js",
   "bin": "./src/boot-cli-dev.js",
   "scripts": {
@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/sysgears/larix/packages/zen#readme",
   "files": [
-    "src",
-    "lib",
+    "src/**/*",
+    "lib/**/*",
     "html-plugin-template.ejs",
     "zen.js",
     "webpack.config.js",
