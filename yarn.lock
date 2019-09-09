@@ -545,7 +545,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@larix/monorepo@workspace:*, @larix/monorepo@workspace:.":
+"@larix/monorepo@workspace:.":
   version: 0.0.0-use.local
   resolution: "@larix/monorepo@workspace:."
   dependencies:
@@ -573,7 +573,6 @@ __metadata:
   resolution: "@larix/zen@workspace:packages/zen"
   dependencies:
     "@berry/pnpify": "npm:^0.0.4"
-    "@larix/monorepo": "workspace:*"
     "@types/inquirer": "npm:^0.0.35"
     "@types/ip": "npm:^0.0.30"
     "@types/lodash": "npm:^4.14.71"
@@ -606,7 +605,7 @@ __metadata:
     webpack-sources: "npm:^1.0.1"
     yargs: "npm:^8.0.2"
   bin:
-    zen: ./zen.js
+    zen: ./src/boot-cli-dev.js
   languageName: unknown
   linkType: soft
 

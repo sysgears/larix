@@ -1960,10 +1960,6 @@ function $$SETUP_STATE(hydrateRuntimeState) {
                   "npm:0.0.4"
                 ],
                 [
-                  "@larix/monorepo",
-                  "workspace:."
-                ],
-                [
                   "@types/inquirer",
                   "npm:0.0.35"
                 ],
