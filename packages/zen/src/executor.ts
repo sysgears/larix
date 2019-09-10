@@ -118,8 +118,6 @@ const webpackReporter = (zen: Zen, builder: Builder, outputPath: string, log, er
   if (err) {
     log.error(err.stack);
     throw new Error('Build error');
-  } else if (stats.compilation.errors && stats.compilation.errors.length && !zen.watch) {
-    throw new Error('Compilation error');
   }
   if (stats) {
     const str = stats.toString(builder.config.stats);
@@ -133,8 +131,9 @@ const webpackReporter = (zen: Zen, builder: Builder, outputPath: string, log, er
     }
   }
   if (!zen.watch && cluster.isWorker) {
-    log.info('Build process finished, exitting...');
-    process.exit(0);
+    const exitCode = stats.compilation.errors && stats.compilation.errors.length ? 1 : 0;
+    log.info(`Build process finished, exit code: ${exitCode}`);
+    process.exit(exitCode);
   }
 };
 
@@ -1241,6 +1240,8 @@ const execute = (cmd: string, argv: any, builders: Builders, zen: Zen) => {
         cluster.on('exit', (worker, code, signal) => {
           if (cmd !== 'build') {
             zenLogger.warn(`Worker ${workerBuilders[worker.process.pid].id} died, code: ${code}, signal: ${signal}`);
+          } else if (cmd === 'build') {
+            process.exit(code);
           }
         });
       });

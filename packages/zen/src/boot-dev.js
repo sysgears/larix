@@ -1,7 +1,7 @@
 require('../../../.pnp.js').setup();
 
 const path = require(`path`);
-const root = path.dirname(__dirname);
+const root = path.resolve(__dirname + '/../../..');
 
 require(`@babel/register`)({
   root,
