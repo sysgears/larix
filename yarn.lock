@@ -304,33 +304,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@berry/fslib@npm:0.0.6":
-  version: 0.0.6
-  resolution: "@berry/fslib@npm:0.0.6"
-  dependencies:
-    "@berry/libzip": "npm:0.0.4"
-  checksum: 2909f436747726d927ff8b01e47fbd60e50bc9e546784410253a47e0a603198e56245a5f21a20873c0fcfa0d4d73221cba7a27e9ef44c92a2d656bac89ff69a2
-  languageName: node
-  linkType: hard
-
-"@berry/libzip@npm:0.0.4":
-  version: 0.0.4
-  resolution: "@berry/libzip@npm:0.0.4"
-  checksum: 044ff6935cfff2c9abfff07045032e5390c322cf26b0f277f4ae5ffb54d389712f5ec1d602c17faaf73d8a712ca780483b81c83fc69b3c41d18146dcf44b81ea
-  languageName: node
-  linkType: hard
-
-"@berry/pnpify@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "@berry/pnpify@npm:0.0.4"
-  dependencies:
-    "@berry/fslib": "npm:0.0.6"
-  bin:
-    pnpify: ./lib/bin.js
-  checksum: 807bfd654cce6ed111c0f7e09c51c073749ee6969bd1e81b1863e61ffe2ac2eefc59705c6611afb84cee5f992977407927bf577efab334372d74e87a30d85091
-  languageName: node
-  linkType: hard
-
 "@cnakazawa/watch@npm:^1.0.3":
   version: 1.0.3
   resolution: "@cnakazawa/watch@npm:1.0.3"
@@ -513,8 +486,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larix/create@workspace:packages/create"
   dependencies:
-    "@berry/pnpify": "npm:^0.0.4"
     "@larix/generator": "workspace:*"
+    "@yarnpkg/pnpify": "npm:^2.0.0-rc.3"
     chalk: "npm:^2.4.1"
     rimraf: "npm:^2.6.2"
     source-map-support: "npm:^0.5.6"
@@ -528,9 +501,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larix/generator@workspace:packages/generator"
   dependencies:
-    "@berry/pnpify": "npm:^0.0.4"
     "@types/humps": "npm:^1.1.2"
     "@types/mustache": "npm:^0.8.30"
+    "@yarnpkg/pnpify": "npm:^2.0.0-rc.3"
     chalk: "npm:^2.4.1"
     fuzzy: "npm:^0.1.3"
     humps: "npm:^2.0.1"
@@ -553,9 +526,9 @@ __metadata:
     "@babel/plugin-proposal-class-properties": "npm:^7.4.4"
     "@babel/plugin-transform-modules-commonjs": "npm:^7.4.4"
     "@babel/preset-typescript": "npm:^7.3.3"
-    "@berry/pnpify": "npm:^0.0.4"
     "@types/jest": "npm:^24.0.6"
     "@types/node": "npm:^11.11.3"
+    "@yarnpkg/pnpify": "npm:^2.0.0-rc.3"
     babel-jest: "npm:^24.8.0"
     husky: "npm:^0.14.3"
     jest: "npm:^24.1.0"
@@ -572,7 +545,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larix/zen@workspace:packages/zen"
   dependencies:
-    "@berry/pnpify": "npm:^0.0.4"
     "@types/inquirer": "npm:^0.0.35"
     "@types/ip": "npm:^0.0.30"
     "@types/lodash": "npm:^4.14.71"
@@ -580,6 +552,7 @@ __metadata:
     "@types/webpack": "npm:^3.0.10"
     "@types/webpack-sources": "npm:^0.1.2"
     "@types/yargs": "npm:^8.0.2"
+    "@yarnpkg/pnpify": "npm:^2.0.0-rc.3"
     connect-cors: "npm:^0.5.6"
     debug: "npm:^3.1.0"
     detect-port: "npm:^1.2.2"
@@ -978,6 +951,43 @@ __metadata:
   version: 8.0.3
   resolution: "@types/yargs@npm:8.0.3"
   checksum: 8a65fed4fa976f0e5f346bda030590f6cda32ed84829c748377b3289604c0027cf969d8624ab3f639f538a73509482e2fc9c8a609f4f181c463b52d808805c91
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/fslib@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@yarnpkg/fslib@npm:2.0.0-rc.3"
+  dependencies:
+    "@yarnpkg/libzip": "npm:2.0.0-rc.3"
+    tmp: "npm:^0.0.33"
+  checksum: 87eee67ceff2566b38805bc9927957cfe95f11aae24f196aba71ffe29abb3e9075493687ee290c9a11edfc967a1e3e33b80bd1bc43317d7aadfb7d584d631b9b
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/libzip@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@yarnpkg/libzip@npm:2.0.0-rc.3"
+  checksum: 36fccab87fbfe90d20d88aceb1083181dc94b64179a163382d86332418e5a6033005afca65911826e0ca04a19dbcae01595cb1e79a28a5320f18d42bdefa36a1
+  languageName: node
+  linkType: hard
+
+"@yarnpkg/pnpify@npm:^2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@yarnpkg/pnpify@npm:2.0.0-rc.3"
+  dependencies:
+    "@yarnpkg/fslib": "npm:2.0.0-rc.3"
+    cross-spawn: "npm:^6.0.5"
+  peerDependencies:
+    eslint: "*"
+    typescript: "*"
+  peerDependenciesMeta:
+    eslint:
+      optional: true
+    typescript:
+      optional: true
+  bin:
+    pnpify: ./lib/cli.js
+  checksum: 6bf31705300a36461fa1f45a827430cd5efc1de7708ac6c5912d872bd22dd607246d8286457cd1a8738af47160b086fc5401d8f03c0e4e99cedeaa6b86831984
   languageName: node
   linkType: hard
 
@@ -1796,7 +1806,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^6.0.0":
+"cross-spawn@npm:^6.0.0, cross-spawn@npm:^6.0.5":
   version: 6.0.5
   resolution: "cross-spawn@npm:6.0.5"
   dependencies:
@@ -4023,11 +4033,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "larix@workspace:packages/larix"
   dependencies:
-    "@berry/pnpify": "npm:^0.0.4"
     "@types/connect": "npm:^3.4.32"
     "@types/diff": "npm:^3.5.2"
     "@types/fs-extra": "npm:^5.0.4"
     "@types/tmp": "npm:^0.0.34"
+    "@yarnpkg/pnpify": "npm:^2.0.0-rc.3"
     axios: "npm:^0.18.0"
     cachedir: "npm:^2.1.0"
     chalk: "npm:^2.4.2"

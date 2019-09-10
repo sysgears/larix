@@ -41,9 +41,9 @@
     "validate-npm-package-name": "^3.0.0"
   },
   "devDependencies": {
-    "@berry/pnpify": "^0.0.4",
     "@types/humps": "^1.1.2",
     "@types/mustache": "^0.8.30",
+    "@yarnpkg/pnpify": "^2.0.0-rc.3",
     "rimraf": "^2.6.2",
     "typescript": "^3.3.3"
   }
