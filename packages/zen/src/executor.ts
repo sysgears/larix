@@ -1240,7 +1240,7 @@ const execute = (cmd: string, argv: any, builders: Builders, zen: Zen) => {
         cluster.on('exit', (worker, code, signal) => {
           if (cmd !== 'build') {
             zenLogger.warn(`Worker ${workerBuilders[worker.process.pid].id} died, code: ${code}, signal: ${signal}`);
-          } else if (cmd === 'build') {
+          } else if (cmd === 'build' && code !== 0) {
             process.exit(code);
           }
         });
