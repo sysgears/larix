@@ -1,9 +1,10 @@
+declare let ErrorUtils: any;
+
 try {
-  // tslint:disable-next-line
   require('./AwakeInDevApp');
 } catch (e) {
   if (typeof ErrorUtils !== 'undefined') {
-    (ErrorUtils as any).reportFatalError(e);
+    ErrorUtils.reportFatalError(e);
   } else {
     console.error(e);
   }

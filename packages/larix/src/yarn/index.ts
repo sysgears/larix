@@ -60,6 +60,7 @@ export const runYarnAndGetLastLine = async (cmd: string[]): Promise<string> => {
     await runYarn(cmd);
     return lastLine;
   } finally {
+    // eslint-disable-next-line require-atomic-updates
     process.stdout.write = origWrite;
   }
 };

@@ -53,7 +53,9 @@ const getTopDeps = (
                 result[depGroup] = result[depGroup] || {};
                 result[depGroup][depName] = pkg[depGroup][depName];
               }
-            } catch (e) {}
+            } catch (e) {
+              // continue, regardless of error
+            }
           }
         } else {
           hasSeen = true;

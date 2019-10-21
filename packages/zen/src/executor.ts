@@ -70,6 +70,7 @@ const spawnServer = (cwd, args: any[], options: { nodeDebugger: boolean; serverP
     }
     logger.info(`Backend stopped, exit code:`, code);
     server = undefined;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     runServer(cwd, options.serverPath, options.nodeDebugger, logger);
   });
 };
@@ -166,140 +167,6 @@ class MobileAssetsPlugin {
   }
 }
 
-const startClientWebpack = (hasBackend, zen, builder) => {
-  const webpack = builder.require('webpack');
-
-  const config = builder.config;
-  const configOutputPath = config.output.path;
-
-  const VirtualModules = builder.require('webpack-virtual-modules');
-  const clientVirtualModules = new VirtualModules({
-    [path.join(builder.projectRoot, 'node_modules', 'backend_reload.js')]: ''
-  });
-  config.plugins.push(clientVirtualModules);
-  frontendVirtualModules.push(clientVirtualModules);
-
-  const logger = minilog(`${config.name}-webpack`);
-  if (builder.silent) {
-    logger.suggest.deny(/.*/, 'debug');
-  }
-  try {
-    const reporter = (...args) => webpackReporter(zen, builder, configOutputPath, logger, ...args);
-
-    if (zen.watch) {
-      startWebpackDevServer(hasBackend, zen, builder, reporter, logger);
-    } else {
-      if (builder.stack.platform !== 'web') {
-        config.plugins.push(new MobileAssetsPlugin());
-      }
-
-      const compiler = webpack(config);
-
-      compiler.run(reporter);
-    }
-  } catch (err) {
-    logger.error(err.message, err.stack);
-  }
-};
-
-let backendReloadCount = 0;
-const increaseBackendReloadCount = builder => {
-  backendReloadCount++;
-  for (const virtualModules of frontendVirtualModules) {
-    virtualModules.writeModule(
-      path.join(builder.projectRoot, 'node_modules', 'backend_reload.js'),
-      `var count = ${backendReloadCount};\n`
-    );
-  }
-};
-
-const startServerWebpack = (zen, builder) => {
-  const config = builder.config;
-  const logger = minilog(`${config.name}-webpack`);
-  if (builder.silent) {
-    logger.suggest.deny(/.*/, 'debug');
-  }
-
-  try {
-    const webpack = builder.require('webpack');
-    const reporter = (...args) => webpackReporter(zen, builder, config.output.path, logger, ...args);
-
-    const compiler = webpack(config);
-
-    if (zen.watch) {
-      hookSync(compiler, 'done', stats => {
-        if (stats.compilation.errors && stats.compilation.errors.length) {
-          stats.compilation.errors.forEach(error => logger.error(error.message));
-        }
-      });
-
-      hookSync(compiler, 'compilation', compilation => {
-        hookSync(compilation, 'after-optimize-assets', assets => {
-          // Patch webpack-generated original source files path, by stripping hash after filename
-          const mapKey = _.findKey(assets, (v, k) => k.endsWith('.map'));
-          if (mapKey) {
-            const srcMap = JSON.parse(assets[mapKey]._value);
-            for (const idx of Object.keys(srcMap.sources)) {
-              srcMap.sources[idx] = srcMap.sources[idx].split(';')[0];
-            }
-            assets[mapKey]._value = JSON.stringify(srcMap);
-          }
-        });
-      });
-
-      compiler.watch({}, reporter);
-
-      hookSync(compiler, 'done', stats => {
-        if (!stats.compilation.errors.length) {
-          const { output } = config;
-          startBackend = true;
-          if (server) {
-            if (!__WINDOWS__) {
-              server.kill('SIGUSR2');
-            }
-
-            if (builder.frontendRefreshOnBackendChange) {
-              for (const module of stats.compilation.modules) {
-                if (module.built && module.resource && module.resource.indexOf('server') >= 0) {
-                  // Force front-end refresh on back-end change
-                  logger.debug('Force front-end current page refresh, due to change in backend at:', module.resource);
-                  process.send({ cmd: BACKEND_CHANGE_MSG });
-                  break;
-                }
-              }
-            }
-          } else {
-            runServer(builder.require.cwd, path.join(output.path, 'index.js'), builder.nodeDebugger, logger);
-          }
-        }
-      });
-    } else {
-      compiler.run(reporter);
-    }
-  } catch (err) {
-    logger.error(err.message, err.stack);
-  }
-};
-
-const openFrontend = (zen, builder, logger) => {
-  try {
-    if (builder.stack.hasAny('react-native')) {
-      startExpoProject(zen, builder, logger);
-    }
-  } catch (e) {
-    logger.error(e.stack);
-  }
-};
-
-const debugMiddleware = (req, res, next) => {
-  if (['/debug', '/debug/bundles'].indexOf(req.path) >= 0) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end('<!doctype html><div><a href="/debug/bundles">Cached Bundles</a></div>');
-  } else {
-    next();
-  }
-};
-
 const reactNativeImpl = {
   community: {
     messageSocket: '@react-native-community/cli/build/commands/server/messageSocket',
@@ -334,11 +201,16 @@ const reactNativeImpl = {
   }
 };
 
-const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyMiddleware: (app) => void) => {
-  let serverInstance: any;
+const debugMiddleware = (req, res, next) => {
+  if (['/debug', '/debug/bundles'].indexOf(req.path) >= 0) {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end('<!doctype html><div><a href="/debug/bundles">Cached Bundles</a></div>');
+  } else {
+    next();
+  }
+};
 
-  let webSocketProxy;
-  let messageSocket;
+const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyMiddleware: (app) => void) => {
   let wsProxy;
   let ms;
   let inspectorProxy;
@@ -350,7 +222,7 @@ const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyM
 
   const app = connect();
 
-  serverInstance = http.createServer(app);
+  const serverInstance = http.createServer(app);
   mime.define({ 'application/javascript': ['bundle'] }, true);
   mime.define({ 'application/json': ['assets'] }, true);
 
@@ -358,29 +230,35 @@ const startReactNativeServer = async (builder: Builder, zen: Zen, logger, applyM
   const rnRequire = isOriginal ? builder.require : name => builder.require(name).default;
   const rnImpl = isOriginal ? reactNativeImpl.original : reactNativeImpl.community;
 
-  messageSocket = rnRequire(rnImpl.messageSocket);
-  webSocketProxy = rnRequire(rnImpl.webSocketProxy);
+  const messageSocket = rnRequire(rnImpl.messageSocket);
+  const webSocketProxy = rnRequire(rnImpl.webSocketProxy);
 
   try {
     if (rnImpl.inspectorProxy) {
       const InspectorProxy = rnRequire(rnImpl.inspectorProxy);
       inspectorProxy = new InspectorProxy();
     }
-  } catch (ignored) {}
+  } catch (ignored) {
+    // continue, regardless of error
+  }
   const copyToClipBoardMiddleware = rnRequire(rnImpl.copyToClipBoardMiddleware);
   let cpuProfilerMiddleware;
   try {
     if (rnImpl.cpuProfilerMiddleware) {
       cpuProfilerMiddleware = rnRequire(rnImpl.cpuProfilerMiddleware);
     }
-  } catch (ignored) {}
+  } catch (ignored) {
+    // continue, regardless of error
+  }
   const getDevToolsMiddleware = rnRequire(rnImpl.getDevToolsMiddleware);
   let heapCaptureMiddleware;
   try {
     if (rnImpl.heapCaptureMiddleware) {
       heapCaptureMiddleware = rnRequire(rnImpl.heapCaptureMiddleware);
     }
-  } catch (ignored) {}
+  } catch (ignored) {
+    // continue, regardless of error
+  }
   const indexPageMiddleware = rnRequire(rnImpl.indexPageMiddleware);
   const loadRawBodyMiddleware = rnRequire(rnImpl.loadRawBodyMiddleware);
   const openStackFrameInEditorMiddleware = rnRequire(rnImpl.openStackFrameInEditorMiddleware);
@@ -664,7 +542,14 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
     }
     if (frontendFirstStart) {
       frontendFirstStart = false;
-      openFrontend(zen, builder, logger);
+      try {
+        if (builder.stack.hasAny('react-native')) {
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          startExpoProject(zen, builder, logger);
+        }
+      } catch (e) {
+        logger.error(e.stack);
+      }
     }
     console.log('open:', config.devServer.open);
   });
@@ -741,6 +626,283 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
   serverPromise.then(() => {
     logger.info(`Webpack dev server listening on http://localhost:${config.devServer.port}`);
   });
+};
+
+const startClientWebpack = (hasBackend, zen, builder) => {
+  const webpack = builder.require('webpack');
+
+  const config = builder.config;
+  const configOutputPath = config.output.path;
+
+  const VirtualModules = builder.require('webpack-virtual-modules');
+  const clientVirtualModules = new VirtualModules({
+    [path.join(builder.projectRoot, 'node_modules', 'backend_reload.js')]: ''
+  });
+  config.plugins.push(clientVirtualModules);
+  frontendVirtualModules.push(clientVirtualModules);
+
+  const logger = minilog(`${config.name}-webpack`);
+  if (builder.silent) {
+    logger.suggest.deny(/.*/, 'debug');
+  }
+  try {
+    const reporter = (...args) => webpackReporter(zen, builder, configOutputPath, logger, ...args);
+
+    if (zen.watch) {
+      startWebpackDevServer(hasBackend, zen, builder, reporter, logger);
+    } else {
+      if (builder.stack.platform !== 'web') {
+        config.plugins.push(new MobileAssetsPlugin());
+      }
+
+      const compiler = webpack(config);
+
+      compiler.run(reporter);
+    }
+  } catch (err) {
+    logger.error(err.message, err.stack);
+  }
+};
+
+let backendReloadCount = 0;
+const increaseBackendReloadCount = builder => {
+  backendReloadCount++;
+  for (const virtualModules of frontendVirtualModules) {
+    virtualModules.writeModule(
+      path.join(builder.projectRoot, 'node_modules', 'backend_reload.js'),
+      `var count = ${backendReloadCount};\n`
+    );
+  }
+};
+
+const startServerWebpack = (zen, builder) => {
+  const config = builder.config;
+  const logger = minilog(`${config.name}-webpack`);
+  if (builder.silent) {
+    logger.suggest.deny(/.*/, 'debug');
+  }
+
+  try {
+    const webpack = builder.require('webpack');
+    const reporter = (...args) => webpackReporter(zen, builder, config.output.path, logger, ...args);
+
+    const compiler = webpack(config);
+
+    if (zen.watch) {
+      hookSync(compiler, 'done', stats => {
+        if (stats.compilation.errors && stats.compilation.errors.length) {
+          stats.compilation.errors.forEach(error => logger.error(error.message));
+        }
+      });
+
+      hookSync(compiler, 'compilation', compilation => {
+        hookSync(compilation, 'after-optimize-assets', assets => {
+          // Patch webpack-generated original source files path, by stripping hash after filename
+          const mapKey = _.findKey(assets, (v, k) => k.endsWith('.map'));
+          if (mapKey) {
+            const srcMap = JSON.parse(assets[mapKey]._value);
+            for (const idx of Object.keys(srcMap.sources)) {
+              srcMap.sources[idx] = srcMap.sources[idx].split(';')[0];
+            }
+            assets[mapKey]._value = JSON.stringify(srcMap);
+          }
+        });
+      });
+
+      compiler.watch({}, reporter);
+
+      hookSync(compiler, 'done', stats => {
+        if (!stats.compilation.errors.length) {
+          const { output } = config;
+          startBackend = true;
+          if (server) {
+            if (!__WINDOWS__) {
+              server.kill('SIGUSR2');
+            }
+
+            if (builder.frontendRefreshOnBackendChange) {
+              for (const module of stats.compilation.modules) {
+                if (module.built && module.resource && module.resource.indexOf('server') >= 0) {
+                  // Force front-end refresh on back-end change
+                  logger.debug('Force front-end current page refresh, due to change in backend at:', module.resource);
+                  process.send({ cmd: BACKEND_CHANGE_MSG });
+                  break;
+                }
+              }
+            }
+          } else {
+            runServer(builder.require.cwd, path.join(output.path, 'index.js'), builder.nodeDebugger, logger);
+          }
+        }
+      });
+    } else {
+      compiler.run(reporter);
+    }
+  } catch (err) {
+    logger.error(err.message, err.stack);
+  }
+};
+
+const deviceLoggers = {};
+
+const mirrorExpoLogs = (builder: Builder, projectRoot: string) => {
+  const bunyan = builder.require('@expo/bunyan');
+
+  if (!bunyan._patched) {
+    deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
+
+    const origCreate = bunyan.createLogger;
+    bunyan.createLogger = opts => {
+      const logger = origCreate.call(bunyan, opts);
+      const origChild = logger.child;
+      logger.child = (...args) => {
+        const child = origChild.apply(logger, args);
+        const patched = { ...child };
+        for (const name of ['info', 'debug', 'warn', 'error']) {
+          patched[name] = (...logArgs) => {
+            const [obj, msg] = logArgs;
+            if (!obj.issueCleared) {
+              let message;
+              try {
+                const json = JSON.parse(msg);
+                message = json.stack ? json.message + '\n' + json.stack : json.message;
+              } catch (e) {
+                // continue, regardless of error
+              }
+              message = message || msg || obj;
+              deviceLoggers[projectRoot][name].apply(deviceLoggers[projectRoot], [message]);
+              child[name].call(child, logArgs);
+            }
+          };
+        }
+        return patched;
+      };
+      return logger;
+    };
+    bunyan._patched = true;
+  }
+};
+
+const startExpoServer = async (zen: Zen, builder: Builder, projectRoot: string, packagerPort) => {
+  const { Config, Project, ProjectSettings } = builder.require('xdl');
+
+  mirrorExpoLogs(builder, projectRoot);
+
+  Config.validation.reactNativeVersionWarnings = false;
+  Config.developerTool = 'crna';
+  Config.offline = true;
+
+  await Project.startExpoServerAsync(projectRoot);
+  await ProjectSettings.setPackagerInfoAsync(projectRoot, {
+    packagerPort
+  });
+};
+
+const launchExpoApp = async (builder: Builder, platform: string, logger) => {
+  const { UrlUtils, Android, Simulator } = builder.require('xdl');
+  const qr = builder.require('qrcode-terminal');
+
+  const projectRoot = path.join(builder.require.cwd, '.expo', platform);
+
+  const address = await UrlUtils.constructManifestUrlAsync(projectRoot);
+  const localAddress = await UrlUtils.constructManifestUrlAsync(projectRoot, {
+    hostType: 'localhost'
+  });
+  logger.info(`Expo address for ${platform}, Local: ${localAddress}, LAN: ${address}`);
+  logger.info(
+    "To open this app on your phone scan this QR code in Expo Client (if it doesn't get started automatically)"
+  );
+  qr.generate(address, code => {
+    logger.info('\n' + code);
+  });
+  if (!isDocker()) {
+    if (platform === 'android' || platform === 'all') {
+      const { success, error } = await Android.openProjectAsync(projectRoot);
+
+      if (!success) {
+        logger.error(error.message);
+      }
+    }
+    if (platform === 'ios' || platform === 'all') {
+      const { success, msg } = await Simulator.openUrlInSimulatorSafeAsync(localAddress);
+
+      if (!success) {
+        logger.error('Failed to start Simulator: ', msg);
+      }
+    }
+  }
+};
+
+const copyExpoImage = (cwd: string, expoDir: string, appJson: any, keyPath: string) => {
+  const imagePath: string = _.get(appJson, keyPath);
+  if (imagePath) {
+    const absImagePath = path.join(cwd, imagePath);
+    fs.writeFileSync(path.join(expoDir, path.basename(absImagePath)), fs.readFileSync(absImagePath));
+    _.set(appJson, keyPath, path.basename(absImagePath));
+  }
+};
+
+const setupExpoDir = (zen: Zen, builder: Builder, dir, platform) => {
+  const reactNativeDir = path.join(dir, 'node_modules', 'react-native');
+  mkdirp.sync(path.join(reactNativeDir, 'local-cli'));
+  fs.writeFileSync(
+    path.join(reactNativeDir, 'package.json'),
+    fs.readFileSync(builder.require.resolve('react-native/package.json'))
+  );
+  fs.writeFileSync(path.join(reactNativeDir, 'local-cli/cli.js'), '');
+
+  const reactDir = path.join(dir, 'node_modules', 'react');
+  mkdirp.sync(reactDir);
+  fs.writeFileSync(path.join(reactDir, 'package.json'), fs.readFileSync(builder.require.resolve('react/package.json')));
+
+  const pkg = JSON.parse(fs.readFileSync(builder.require.resolve('./package.json')).toString());
+  const origDeps = pkg.dependencies;
+  delete pkg.devDependencies;
+  pkg.dependencies = { react: origDeps.react, 'react-native': origDeps['react-native'] };
+  if (platform !== 'all') {
+    pkg.name = pkg.name + '-' + platform;
+  }
+  pkg.main = `index.mobile`;
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
+  const appJson = JSON.parse(fs.readFileSync(builder.require.resolve('./app.json'), 'utf8'));
+  [
+    'expo.icon',
+    'expo.ios.icon',
+    'expo.android.icon',
+    'expo.splash.image',
+    'expo.ios.splash.image',
+    'expo.ios.splash.tabletImage',
+    'expo.android.splash.ldpi',
+    'expo.android.splash.mdpi',
+    'expo.android.splash.hdpi',
+    'expo.android.splash.xhdpi',
+    'expo.android.splash.xxhdpi',
+    'expo.android.splash.xxxhdpi'
+  ].forEach(keyPath => copyExpoImage(builder.require.cwd, dir, appJson, keyPath));
+  fs.writeFileSync(path.join(dir, 'app.json'), JSON.stringify(appJson, null, 2));
+  let expRcJson: any = {};
+  try {
+    expRcJson = JSON.parse(fs.readFileSync(builder.require.resolve('./.exprc'), 'utf8'));
+  } catch (e) {
+    // continue, regardless of error
+  }
+  if (platform !== 'all') {
+    expRcJson.manifestPort = expoPorts[platform];
+  }
+  fs.writeFileSync(path.join(dir, '.exprc'), JSON.stringify(expRcJson, null, 2));
+};
+
+const startExpoProject = async (zen: Zen, builder: Builder, logger: any) => {
+  const platform = builder.stack.platform;
+
+  try {
+    const projectRoot = path.join(builder.require.cwd, '.expo', platform);
+    setupExpoDir(zen, builder, projectRoot, platform);
+    await startExpoServer(zen, builder, projectRoot, builder.config.devServer.port);
+    await launchExpoApp(builder, platform, logger);
+  } catch (e) {
+    logger.error(e.stack);
+  }
 };
 
 const isDllValid = (zen, builder, logger): boolean => {
@@ -850,164 +1012,6 @@ const buildDll = (zen: Zen, builder: Builder) => {
   });
 };
 
-const copyExpoImage = (cwd: string, expoDir: string, appJson: any, keyPath: string) => {
-  const imagePath: string = _.get(appJson, keyPath);
-  if (imagePath) {
-    const absImagePath = path.join(cwd, imagePath);
-    fs.writeFileSync(path.join(expoDir, path.basename(absImagePath)), fs.readFileSync(absImagePath));
-    _.set(appJson, keyPath, path.basename(absImagePath));
-  }
-};
-
-const setupExpoDir = (zen: Zen, builder: Builder, dir, platform) => {
-  const reactNativeDir = path.join(dir, 'node_modules', 'react-native');
-  mkdirp.sync(path.join(reactNativeDir, 'local-cli'));
-  fs.writeFileSync(
-    path.join(reactNativeDir, 'package.json'),
-    fs.readFileSync(builder.require.resolve('react-native/package.json'))
-  );
-  fs.writeFileSync(path.join(reactNativeDir, 'local-cli/cli.js'), '');
-
-  const reactDir = path.join(dir, 'node_modules', 'react');
-  mkdirp.sync(reactDir);
-  fs.writeFileSync(path.join(reactDir, 'package.json'), fs.readFileSync(builder.require.resolve('react/package.json')));
-
-  const pkg = JSON.parse(fs.readFileSync(builder.require.resolve('./package.json')).toString());
-  const origDeps = pkg.dependencies;
-  delete pkg.devDependencies;
-  pkg.dependencies = { react: origDeps.react, 'react-native': origDeps['react-native'] };
-  if (platform !== 'all') {
-    pkg.name = pkg.name + '-' + platform;
-  }
-  pkg.main = `index.mobile`;
-  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
-  const appJson = JSON.parse(fs.readFileSync(builder.require.resolve('./app.json'), 'utf8'));
-  [
-    'expo.icon',
-    'expo.ios.icon',
-    'expo.android.icon',
-    'expo.splash.image',
-    'expo.ios.splash.image',
-    'expo.ios.splash.tabletImage',
-    'expo.android.splash.ldpi',
-    'expo.android.splash.mdpi',
-    'expo.android.splash.hdpi',
-    'expo.android.splash.xhdpi',
-    'expo.android.splash.xxhdpi',
-    'expo.android.splash.xxxhdpi'
-  ].forEach(keyPath => copyExpoImage(builder.require.cwd, dir, appJson, keyPath));
-  fs.writeFileSync(path.join(dir, 'app.json'), JSON.stringify(appJson, null, 2));
-  let expRcJson: any = {};
-  try {
-    expRcJson = JSON.parse(fs.readFileSync(builder.require.resolve('./.exprc'), 'utf8'));
-  } catch (e) {}
-  if (platform !== 'all') {
-    expRcJson.manifestPort = expoPorts[platform];
-  }
-  fs.writeFileSync(path.join(dir, '.exprc'), JSON.stringify(expRcJson, null, 2));
-};
-
-const deviceLoggers = {};
-
-const mirrorExpoLogs = (builder: Builder, projectRoot: string) => {
-  const bunyan = builder.require('@expo/bunyan');
-
-  if (!bunyan._patched) {
-    deviceLoggers[projectRoot] = minilog('expo-for-' + builder.name);
-
-    const origCreate = bunyan.createLogger;
-    bunyan.createLogger = opts => {
-      const logger = origCreate.call(bunyan, opts);
-      const origChild = logger.child;
-      logger.child = (...args) => {
-        const child = origChild.apply(logger, args);
-        const patched = { ...child };
-        for (const name of ['info', 'debug', 'warn', 'error']) {
-          patched[name] = (...logArgs) => {
-            const [obj, msg] = logArgs;
-            if (!obj.issueCleared) {
-              let message;
-              try {
-                const json = JSON.parse(msg);
-                message = json.stack ? json.message + '\n' + json.stack : json.message;
-              } catch (e) {}
-              message = message || msg || obj;
-              deviceLoggers[projectRoot][name].apply(deviceLoggers[projectRoot], [message]);
-              child[name].call(child, logArgs);
-            }
-          };
-        }
-        return patched;
-      };
-      return logger;
-    };
-    bunyan._patched = true;
-  }
-};
-
-const startExpoServer = async (zen: Zen, builder: Builder, projectRoot: string, packagerPort) => {
-  const { Config, Project, ProjectSettings } = builder.require('xdl');
-
-  mirrorExpoLogs(builder, projectRoot);
-
-  Config.validation.reactNativeVersionWarnings = false;
-  Config.developerTool = 'crna';
-  Config.offline = true;
-
-  await Project.startExpoServerAsync(projectRoot);
-  await ProjectSettings.setPackagerInfoAsync(projectRoot, {
-    packagerPort
-  });
-};
-
-const launchExpoApp = async (builder: Builder, platform: string, logger) => {
-  const { UrlUtils, Android, Simulator } = builder.require('xdl');
-  const qr = builder.require('qrcode-terminal');
-
-  const projectRoot = path.join(builder.require.cwd, '.expo', platform);
-
-  const address = await UrlUtils.constructManifestUrlAsync(projectRoot);
-  const localAddress = await UrlUtils.constructManifestUrlAsync(projectRoot, {
-    hostType: 'localhost'
-  });
-  logger.info(`Expo address for ${platform}, Local: ${localAddress}, LAN: ${address}`);
-  logger.info(
-    "To open this app on your phone scan this QR code in Expo Client (if it doesn't get started automatically)"
-  );
-  qr.generate(address, code => {
-    logger.info('\n' + code);
-  });
-  if (!isDocker()) {
-    if (platform === 'android' || platform === 'all') {
-      const { success, error } = await Android.openProjectAsync(projectRoot);
-
-      if (!success) {
-        logger.error(error.message);
-      }
-    }
-    if (platform === 'ios' || platform === 'all') {
-      const { success, msg } = await Simulator.openUrlInSimulatorSafeAsync(localAddress);
-
-      if (!success) {
-        logger.error('Failed to start Simulator: ', msg);
-      }
-    }
-  }
-};
-
-const startExpoProject = async (zen: Zen, builder: Builder, logger: any) => {
-  const platform = builder.stack.platform;
-
-  try {
-    const projectRoot = path.join(builder.require.cwd, '.expo', platform);
-    setupExpoDir(zen, builder, projectRoot, platform);
-    await startExpoServer(zen, builder, projectRoot, builder.config.devServer.port);
-    await launchExpoApp(builder, platform, logger);
-  } catch (e) {
-    logger.error(e.stack);
-  }
-};
-
 const startWebpack = async (zen: Zen, builder: Builder, platforms: any) => {
   if (builder.stack.platform === 'server') {
     startServerWebpack(zen, builder);
@@ -1039,7 +1043,7 @@ const startExpoProdServer = async (zen: Zen, mainBuilder: Builder, builders: Bui
       }
       const platform = url.parse(req.url, true).query.platform;
       if (platform) {
-        let platformFound: boolean = false;
+        let platformFound = false;
         for (const name of Object.keys(builders)) {
           const builder = builders[name];
           if (builder.stack.hasAny(platform)) {
@@ -1124,9 +1128,7 @@ const runBuilder = (cmd: string, builder: Builder, platforms) => {
     prepareDllPromise.then(() => startWebpack(zen, builder, platforms));
   } else {
     throw new Error(
-      `builder '${
-        builder.name
-      }' stack does not include 'webpack'. Consider let zen guess your stack by removing 'stack' propery.`
+      `builder '${builder.name}' stack does not include 'webpack'. Consider let zen guess your stack by removing 'stack' propery.`
     );
   }
 };
@@ -1176,7 +1178,7 @@ const execute = (cmd: string, argv: any, builders: Builders, zen: Zen) => {
           const mochapackCmd = haveMochapack ? 'mochapack' : 'mocha-webpack';
 
           const testCmd = path.join(process.cwd(), 'node_modules/.bin/' + mochapackCmd + (__WINDOWS__ ? '.cmd' : ''));
-          testArgs.push.apply(testArgs, process.argv.slice(process.argv.indexOf('test') + 1));
+          testArgs.push(...process.argv.slice(process.argv.indexOf('test') + 1));
           zenLogger.info(`Running ${testCmd} ${testArgs.join(' ')}`);
 
           const env: any = Object.create(process.env);

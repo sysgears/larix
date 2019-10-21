@@ -72,7 +72,7 @@ module.exports = async function assetLoader() {
   const url = path
     .relative(config.root, dirname)
     .replace(/\\/g, '/')
-    .replace(/^[\.\/]*/, '');
+    .replace(/^[./]*/, '');
   const type = path.extname(filepath).replace(/^\./, '');
   const assets = path.join('assets', config.bundle ? '' : config.platform);
   const suffix = `(@\\d+(\\.\\d+)?x)?(\\.(${config.platform}|native))?\\.${type}$`;
@@ -173,7 +173,7 @@ module.exports = async function assetLoader() {
   const hashes = pairs.map((item: any) => hasha(item.content, { algorithm: 'md5' }));
 
   const asset: any = {
-    __packager_asset: true,
+    __packager_asset: true, // eslint-disable-line @typescript-eslint/camelcase
     scales,
     name: filename,
     type,

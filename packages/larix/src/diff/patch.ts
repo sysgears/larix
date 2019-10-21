@@ -30,10 +30,14 @@ export const createPatch = (file1: string, file2: string, basedir1?: string, bas
         let stat2;
         try {
           stat1 = fs.statSync(filePath1);
-        } catch (e) {}
+        } catch (e) {
+          // continue, regardless of error
+        }
         try {
           stat2 = fs.statSync(filePath2);
-        } catch (e) {}
+        } catch (e) {
+          // continue, regardless of error
+        }
         // if (!stat1 || !stat2) {
         //   console.log(filePath1, filePath2);
         // }
@@ -107,7 +111,7 @@ export const patchToStr = (patch: Patch | diff.IUniDiff): string => {
 
 export const parsePkgVersionFromPatch = (patchPath: string): string => {
   const contents = fs.readFileSync(patchPath, 'utf8');
-  const matches = contents.match(/^---[\s]([^\t\\\/]+)/m);
+  const matches = contents.match(/^---[\s]([^\t\\/]+)/m);
   if (!matches || matches.length <= 1 || !matches[1].startsWith('npm-')) {
     throw new Error(`Non larix patch detected at: ${patchPath}`);
   } else {

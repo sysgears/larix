@@ -1,4 +1,3 @@
-// tslint:disable-next-line
 import { Configuration } from 'webpack';
 import * as merge from 'webpack-merge';
 

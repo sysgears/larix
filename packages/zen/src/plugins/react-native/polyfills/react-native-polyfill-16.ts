@@ -1,4 +1,3 @@
-// tslint:disable:no-var-requires no-implicit-dependencies
 require('react-native/Libraries/polyfills/Object.es6.js');
 require('react-native/Libraries/polyfills/console.js');
 require('react-native/Libraries/polyfills/error-guard.js');
@@ -9,7 +8,7 @@ require('react-native/Libraries/polyfills/Array.es6.js');
 require('react-native/Libraries/polyfills/Object.es7.js');
 require('react-native/Libraries/polyfills/babelHelpers.js');
 
-declare var __DEV__;
+declare let __DEV__;
 
 (global as any).__DEV__ = __DEV__;
 (global as any).__BUNDLE_START_TIME__ = (global as any).nativePerformanceNow

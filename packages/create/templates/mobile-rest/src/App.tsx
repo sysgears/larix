@@ -5,7 +5,6 @@ import * as url from 'url';
 
 const REST_API_PROD_URL = 'https://example.com:8080/api';
 
-// tslint:disable-next-line
 interface ServerHelloProps {
   apiUrl: string;
 }

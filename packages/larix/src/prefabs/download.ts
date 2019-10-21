@@ -33,7 +33,7 @@ const downloadPrefab = async (options: DownloadPrefabOptions): Promise<string> =
     return new Promise(resolve => {
       const extract = tar.extract();
       extract.on('entry', (header, stream, next) => {
-        const entryName = header.name.substring(header.name.search(/[\/\\]/) + 1);
+        const entryName = header.name.substring(header.name.search(/[/\\]/) + 1);
         const entryDir = path.join(prefabCacheDir, path.dirname(entryName));
         fs.mkdirpSync(entryDir);
 

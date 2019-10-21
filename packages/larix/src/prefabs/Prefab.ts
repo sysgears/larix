@@ -21,8 +21,7 @@ export default class Prefab {
         }
         this.baseVersion = parsePkgVersionFromPatch(patchPath);
       } else {
-        for (const file of files) {
-        }
+        // TODO: write code
       }
     }
   }

@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "target": "es2017",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "experimentalDecorators": true,
     "module": "commonjs",
-    "lib": ["es2016"],
+    "lib": ["es2017", "esnext.asynciterable"],
     "moduleResolution": "node",
     "sourceMap": true,
     "declaration": true,
     "noImplicitAny": false,
-    "experimentalDecorators": true,
     "pretty": true,
     "removeComments": true
   },

@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { start } from 'repl';
 
 export interface DirRoots {
   srcRoot: string;
@@ -11,7 +10,7 @@ export interface TemplateFilePaths {
   [relativePath: string]: DirRoots[];
 }
 
-export const getTemplateFilePaths = (options: DirRoots[] | string, startFile: string = '.'): TemplateFilePaths => {
+export const getTemplateFilePaths = (options: DirRoots[] | string, startFile = '.'): TemplateFilePaths => {
   const result: TemplateFilePaths = {};
 
   [].concat(options).forEach(dirRoots => {

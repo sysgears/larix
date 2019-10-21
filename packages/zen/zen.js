@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 require('source-map-support').install();
-require('./lib/cli');
+require('@larix/zen').cli();

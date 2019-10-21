@@ -158,6 +158,7 @@ const parseVersionsFromMaybeConflictingFile = (filePath: string): Versions => {
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const hasConflics = new RegExp('^' + CONFLICT_MINE + ' ', 'm').test(fileContents);
   if (hasConflics) {
+    result.baseVersion = '';
   }
 
   return result;

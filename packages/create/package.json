@@ -3,9 +3,12 @@
   "version": "0.1.10",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
-  "main": "lib/index.js",
+  "main": "src/index.ts",
   "types": "lib/index.d.ts",
   "license": "MIT",
+  "publishConfig": {
+    "main": "lib/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sysgears/larix.git"
@@ -15,13 +18,14 @@
   },
   "homepage": "https://github.com/sysgears/larix/tree/master/packages/create#readme",
   "scripts": {
-    "clean": "rimraf ./lib",
-    "build": "pnpify tsc",
-    "watch": "pnpify tsc -w",
-    "lint": "tslint -p tsconfig.json --fix -c ../../tslint.json",
-    "tests": "jest --passWithNoTests",
+    "clean": "rm -rf lib",
+    "build": "yarn build:tsc packages/create",
+    "watch": "yarn build:tsc packages/create -w",
+    "lint": "yarn test:lint --fix **/*.ts",
+    "tests": "yarn test:unit packages/create",
+    "tests:watch": "yarn test:unit packages/create --watch",
     "test": "yarn tests && yarn lint",
-    "prepublishOnly": "yarn clean && yarn build"
+    "prepack": "yarn clean && yarn build"
   },
   "bin": "create-larix-app.js",
   "files": [
@@ -33,10 +37,5 @@
     "@larix/generator": "workspace:*",
     "chalk": "^2.4.1",
     "source-map-support": "^0.5.6"
-  },
-  "devDependencies": {
-    "@yarnpkg/pnpify": "^2.0.0-rc.3",
-    "rimraf": "^2.6.2",
-    "typescript": "^3.3.3"
   }
 }

@@ -1,6 +1,5 @@
 import * as path from 'path';
 
-import { RawSource } from 'webpack-sources';
 import { Builder } from '../../Builder';
 import Zen from '../../Zen';
 

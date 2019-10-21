@@ -36,7 +36,7 @@ export default async (
   const writeFile: WriteFile = (filePath, contents, vars) => {
     const dst = path.join(appName, filePath);
     mkdirp(path.dirname(dst));
-    mustache.parse(contents, ['{;', ';}']);
+    mustache.parse(contents, ['//{', '//}']);
     fs.writeFileSync(
       dst,
       mustache.render(contents, {

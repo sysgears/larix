@@ -1,18 +1,17 @@
 {
   "name": "@larix/zen",
-  "version": "0.1.29",
+  "version": "0.1.31",
   "main": "./src/boot-dev.js",
-  "bin": "./src/boot-cli-dev.js",
+  "bin": "./zen.js",
   "scripts": {
-    "clean": "rimraf ./lib",
-    "build": "pnpify tsc",
-    "watch": "pnpify tsc -w",
-    "lint": "tslint --fix -p tsconfig.json -c tslint.json",
-    "tests": "jest",
-    "tests:watch": "jest --watch",
+    "clean": "rm -rf lib",
+    "build": "yarn build:tsc packages/zen",
+    "watch": "yarn build:tsc packages/zen -w",
+    "lint": "yarn test:lint --fix **/*.ts",
+    "tests": "yarn test:unit packages/zen",
+    "tests:watch": "yarn test:unit packages/zen --watch",
     "test": "yarn tests && yarn lint",
-    "precommit": "lint-staged",
-    "prepublishOnly": "yarn clean && yarn build"
+    "prepack": "yarn clean && yarn build"
   },
   "repository": {
     "type": "git",
@@ -53,23 +52,15 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/register": "^7.5.5",
     "@types/inquirer": "^0.0.35",
     "@types/ip": "^0.0.30",
     "@types/lodash": "^4.14.71",
     "@types/mkdirp": "^0.5.0",
     "@types/webpack": "^3.0.10",
     "@types/webpack-sources": "^0.1.2",
-    "@types/yargs": "^8.0.2",
-    "@yarnpkg/pnpify": "^2.0.0-rc.3",
-    "husky": "^0.14.3",
-    "lint-staged": "^4.1.3",
-    "rimraf": "^2.6.2",
-    "typescript": "^3.6.2"
+    "@types/yargs": "^8.0.2"
   },
   "publishConfig": {
-    "main": "lib/index.js",
-    "bin": "./zen.js"
+    "main": "lib/index.js"
   }
 }

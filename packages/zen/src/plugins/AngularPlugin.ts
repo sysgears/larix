@@ -31,7 +31,7 @@ export default class AngularPlugin implements ConfigPlugin {
              * Note that the webpack.ContextReplacementPlugin must also be properly configured (see below).
              */
             {
-              test: /[\\\/]@angular[\\\/]core[\\\/].+\.js$/,
+              test: /[\\/]@angular[\\/]core[\\/].+\.js$/,
               parser: { system: true }
             }
           ]
@@ -47,7 +47,7 @@ export default class AngularPlugin implements ConfigPlugin {
              * It's necessary to remove the @angular part and fix the issue by enabling
              * the proper module.rules.Rule for @angular/core/*.js files(see above).
              */
-            /angular[\\\/]core/
+            /angular[\\/]core/
           )
         ]
       });

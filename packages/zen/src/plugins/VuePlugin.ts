@@ -7,7 +7,6 @@ export default class VuePlugin implements ConfigPlugin {
     const stack = builder.stack;
 
     if (stack.hasAll(['vue', 'webpack'])) {
-      const webpack = builder.require('webpack');
       const VueLoaderPlugin = builder.require('vue-loader/lib/plugin');
 
       builder.config = zen.merge(builder.config, {

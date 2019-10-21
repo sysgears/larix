@@ -1,8 +1,6 @@
-import * as fs from 'fs';
 import * as fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
 import * as autocomplete from 'inquirer-autocomplete-prompt';
-import * as path from 'path';
 
 inquirer.registerPrompt('autocomplete', autocomplete);
 

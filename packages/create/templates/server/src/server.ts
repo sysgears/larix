@@ -60,7 +60,6 @@ export default async (port: number): Promise<Server> => {
 
   return new Promise<Server>(resolve => {
     server.listen(port, () => {
-      // tslint:disable-next-line
       new SubscriptionServer(
         {
           execute,

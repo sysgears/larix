@@ -20,17 +20,15 @@ const registerBabel = (builder: Builder): void => {
       isBabel7 && builder.require.probe('metro-react-native-babel-preset')
         ? 'metro-react-native-babel-preset'
         : 'babel-preset-react-native';
-    // tslint:disable-next-line
     builder.require(babelRegister)({
       presets: [
         builder.require.resolve(reactNativePreset),
         builder.require.resolve(isBabel7 ? '@babel/preset-flow' : 'babel-preset-flow')
       ],
-      ignore: [/.*[\/\\]node_modules[\/\\](?!haul|react-native)/],
+      ignore: [/.*[/\\]node_modules[/\\](?!haul|react-native)/],
       retainLines: true,
       sourceMaps: 'inline'
     });
-    // tslint:disable-next-line
     builder.require('babel-polyfill');
 
     babelRegisterDone = true;

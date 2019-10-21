@@ -1,5 +1,5 @@
 {
-  "name": "{;slug;}",
+  "name": "//{slug//}",
   "private": true,
   "scripts": {
     "start": "zen -e android -d ios start",

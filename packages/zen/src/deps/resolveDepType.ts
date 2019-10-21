@@ -44,7 +44,9 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
               moduleType = ModuleType.ProjectModule;
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          // continue, regardless of error
+        }
         if (moduleType === ModuleType.NormalNodeModule && KNOWN_RN_PACKAGES.some(regex => regex.test(pkgName))) {
           moduleType = ModuleType.TranspiledNodeModule;
         }
@@ -53,7 +55,9 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
           let modulePath;
           try {
             modulePath = requireDep.resolve(pkgName);
-          } catch (e) {}
+          } catch (e) {
+            // continue, regardless of error
+          }
           if (!modulePath) {
             try {
               const pkgJson = requireDep(pkgName + '/package.json');
@@ -61,12 +65,16 @@ export default (depPath: string, projectRoot: string, requireDep: RequireFunctio
                 modulePath = pkgJson.module;
                 moduleType = ModuleType.TranspiledNodeModule;
               }
-            } catch (e) {}
+            } catch (e) {
+              // continue, regardless of error
+            }
           }
           if (modulePath && moduleType === ModuleType.NormalNodeModule) {
             try {
               entryFileText = fs.readFileSync(modulePath, 'utf8');
-            } catch (e) {}
+            } catch (e) {
+              // continue, regardless of error
+            }
             if (
               entryFileText &&
               entryFileText.indexOf('__esModule') < 0 &&

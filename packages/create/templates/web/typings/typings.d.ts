@@ -1,6 +1,5 @@
 declare module '*.graphql' {
-  // tslint:disable-next-line
-  import { DocumentNode } from "graphql";
+  import { DocumentNode } from 'graphql';
 
   const value: DocumentNode;
   export = value;

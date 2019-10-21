@@ -39,7 +39,7 @@ export default class BabelPlugin implements ConfigPlugin {
       const babelrc = new UPFinder(builder).find(['.babelrc', '.babelrc.js', 'babel.config.js']);
       jsRule.use = {
         loader: builder.require.probe('heroku-babel-loader') ? 'heroku-babel-loader' : 'babel-loader',
-        options: !!babelrc
+        options: babelrc
           ? { babelrc: true, cacheDirectory, rootMode: 'upward-optional' }
           : zen.createConfig(builder, 'babel', {
               babelrc: false,

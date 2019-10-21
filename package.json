@@ -5,32 +5,38 @@
   "scripts": {
     "build": "yarn workspaces foreach run --topological -p -i build",
     "clean": "yarn workspaces foreach run -p -i clean",
-    "tests": "jest",
-    "tests:watch": "jest --watch",
+    "test:unit": "jest",
     "test": "yarn tests && yarn lint",
-    "lint": "tslint -p tsconfig.json --fix -c tslint.json",
-    "watch": "yarn workspaces foreach run --topological -p -i watch"
+    "test:lint": "eslint --fix",
+    "lint": "yarn test:lint **/*.ts",
+    "watch": "yarn workspaces foreach run --topological -p -i watch",
+    "build:tsc": "pnpify tsc -p"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/plugin-proposal-class-properties": "^7.4.4",
-    "@babel/plugin-transform-modules-commonjs": "^7.4.4",
-    "@babel/preset-typescript": "^7.3.3",
-    "@types/jest": "^24.0.6",
-    "@types/node": "^11.11.3",
-    "@yarnpkg/pnpify": "^2.0.0-rc.3",
-    "babel-jest": "^24.8.0",
-    "husky": "^0.14.3",
-    "jest": "^24.1.0",
-    "lint-staged": "^4.1.3",
-    "prettier": "^1.6.1",
-    "tslint": "^5.10.0",
-    "tslint-config-prettier": "^1.5.0",
-    "tslint-plugin-prettier": "^1.3.0",
-    "typescript": "^3.3.3"
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-decorators": "^7.6.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.6.0",
+    "@babel/preset-typescript": "^7.6.0",
+    "@babel/register": "^7.6.0",
+    "@types/jest": "^24.0.19",
+    "@types/node": "^12.11.1",
+    "@typescript-eslint/eslint-plugin": "^2.4.0",
+    "@typescript-eslint/parser": "^2.4.0",
+    "@yarnpkg/pnpify": "2.0.0-rc.6",
+    "babel-jest": "^24.9.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-jest": "^22.19.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "husky": "^3.0.9",
+    "jest": "^24.9.0",
+    "lint-staged": "^9.4.2",
+    "prettier": "^1.18.2",
+    "typescript": "^3.6.4"
   },
   "lint-staged": {
     "*.ts": [

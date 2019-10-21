@@ -52,6 +52,7 @@ const createPlugins = (builder: Builder, zen: Zen) => {
           // https://github.com/angular/angular/issues/10618
           uglifyOpts.uglifyOptions = {
             mangle: {
+              // eslint-disable-next-line @typescript-eslint/camelcase
               keep_fnames: true
             }
           };
@@ -367,6 +368,7 @@ const createConfig = (builder: Builder, zen: Zen) => {
       const TerserPlugin = builder.require('terser-webpack-plugin');
       const terserOptions: any = {};
       if (stack.hasAny('angular')) {
+        // eslint-disable-next-line @typescript-eslint/camelcase
         terserOptions.keep_fnames = true;
       }
       config.optimization.minimizer = [

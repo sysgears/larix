@@ -18,11 +18,6 @@ export interface Template {
   devDependencies?: string[];
 }
 
-enum PackageKind {
-  Workspace = 'workspace',
-  Package = 'package'
-}
-
 const showUsage = (command: string): void => {
   console.log(`Usage: ${chalk.cyan(command)} ${chalk.green('app_name[@optional_template_id]')}`);
   console.log(`  ${chalk.yellow('--help')}  Show help`);
@@ -73,12 +68,7 @@ export interface ProjectInfo {
   templateId: string;
 }
 
-export default (
-  templates: Template[],
-  templateWriter: TemplateWriter,
-  command: string,
-  argv: string[]
-): Promise<ProjectInfo> => {
+export default (templates: Template[], templateWriter: TemplateWriter, command: string): Promise<ProjectInfo> => {
   const templateList = templates.map(template => ({ ...template, id: template.title.split(':')[0].substring(1) }));
   const templateMap = templateList.reduce((result, item) => ({ ...result, [item.id]: item }), {});
 
