@@ -19,6 +19,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.tsx",
     "typings/*.d.ts"
   ],
   "exclude": [

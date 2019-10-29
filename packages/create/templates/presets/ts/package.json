@@ -1,10 +1,10 @@
 {
   "!presets": ["webpack"],
   "devDependencies": {
-    "@types/node": "10.1.4",
-    "@types/webpack-env": "1.13.7",
-    "fork-ts-checker-webpack-plugin": "^0.5.2",
-    "ts-loader": "5.3.3",
-    "typescript": "^3.6.2"
+    "@types/node": "12.11.2",
+    "@types/webpack-env": "1.14.1",
+    "fork-ts-checker-webpack-plugin": "1.5.1",
+    "ts-loader": "6.2.0",
+    "typescript": "3.6.4"
   }
 }

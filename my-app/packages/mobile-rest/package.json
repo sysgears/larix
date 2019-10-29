@@ -1,0 +1,32 @@
+{
+  "name": "my-app-mobile-rest",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "test": "jest",
+    "postinstall": "expo-yarn-workspaces postinstall"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "core-js": "^3.3.4",
+    "expo": "35.0.0",
+    "expo-constants": "^7.0.0",
+    "expo-file-system": "^7.0.0",
+    "expo-font": "^7.0.0",
+    "expo-image-picker": "^7.0.0",
+    "expo-keep-awake": "^7.0.0",
+    "expo-localization": "^7.0.0",
+    "expo-permissions": "^7.0.0",
+    "expo-secure-store": "^7.0.0",
+    "expo-web-browser": "^7.0.1",
+    "expo-yarn-workspaces": "1.2.1",
+    "raf": "^3.4.1",
+    "react": "16.8.3",
+    "react-dom": "16.8.3",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-35.0.0.tar.gz"
+  }
+}

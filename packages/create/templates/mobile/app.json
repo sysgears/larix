@@ -3,12 +3,16 @@
     "name": "//{name//}",
     "version": "0.1.0",
     "slug": "//{slug//}",
-    "sdkVersion": "32.0.0",
+    "sdkVersion": "35.0.0",
     "ios": {
       "bundleIdentifier": "com.//{camelSlug//}"
     },
     "android": {
       "package": "com.//{camelSlug//}"
+    },
+    "packagerOpts": {
+      "config": "metro.config.js",
+      "sourceExts": ["native.tsx", "native.jsx", "native.ts", "native.js", "jsx", "js", "json", "ts", "tsx", "graphql", "gql"]
     }
   }
 }

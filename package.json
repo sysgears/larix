@@ -1,6 +1,9 @@
 {
   "name": "@larix/monorepo",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "license": "MIT",
   "scripts": {
     "build": "yarn workspaces foreach run --topological -p -i build",
@@ -12,10 +15,7 @@
     "watch": "yarn workspaces foreach run --topological -p -i watch",
     "build:tsc": "pnpify tsc -p"
   },
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.6.0",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-proposal-decorators": "^7.6.0",

@@ -1,13 +1,13 @@
 {
   "name": "@larix/generator",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Larix apps generator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
   "main": "src/index.ts",
-  "types": "lib/index.d.ts",
   "license": "MIT",
   "publishConfig": {
-    "main": "lib/index.js"
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
   },
   "repository": {
     "type": "git",
@@ -25,12 +25,15 @@
     "tests": "yarn test:unit packages/generator",
     "tests:watch": "yarn test:unit packages/generator --watch",
     "test": "yarn tests && yarn lint",
-    "prepack": "yarn clean && yarn build"
+    "prepack": "yarn clean && yarn build",
+    "postpack": "yarn clean"
   },
   "files": [
     "lib/*.js",
     "lib/*.d.ts",
-    "lib/*.map"
+    "lib/*.map",
+    "LICENSE",
+    "README.md"
   ],
   "dependencies": {
     "chalk": "^2.4.1",

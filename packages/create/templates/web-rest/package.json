@@ -4,9 +4,9 @@
   "private": true,
   "!presets": ["ts", "babel", "react", "web"],
   "scripts": {
-    "start": "zen start",
-    "build": "cross-env NODE_ENV=production zen build",
-    "test": "zen test"
+    "start": "webpack-dev-server",
+    "build": "cross-env NODE_ENV=production webpack",
+    "test": "jest"
   },
   "dependencies": {
     "axios": "^0.18.0"

@@ -3,11 +3,11 @@
   "version": "0.1.10",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
-  "main": "src/index.ts",
-  "types": "lib/index.d.ts",
+  "main": "./src/boot-dev.js",
   "license": "MIT",
   "publishConfig": {
-    "main": "lib/index.js"
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "templates"
   ],
   "dependencies": {
-    "@larix/generator": "workspace:*",
+    "@larix/generator": "workspace:0.1.4",
     "chalk": "^2.4.1",
     "source-map-support": "^0.5.6"
   }

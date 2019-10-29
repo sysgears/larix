@@ -1,32 +1,38 @@
 {
   "name": "//{slug//}",
   "version": "0.1.0",
+  "main": "./src/index.ts",
   "private": true,
   "!presets": ["ts", "babel", "react"],
   "scripts": {
-    "start": "zen start",
-    "android": "zen -d web -d ios -e android start",
-    "ios": "zen -d web -d ios -e android start",
-    "build": "cross-env NODE_ENV=production zen build",
-    "exp": "cross-env NODE_ENV=production zen exp",
-    "test": "zen test"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "test": "jest",
+    "postinstall": "expo-yarn-workspaces postinstall"
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "expo": "32.0.6",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz"
+    "expo": "35.0.0",
+    "expo-constants": "^7.0.0",
+    "expo-file-system": "^7.0.0",
+    "expo-font": "^7.0.0",
+    "expo-image-picker": "^7.0.0",
+    "expo-keep-awake": "^7.0.0",
+    "expo-localization": "^7.0.0",
+    "expo-permissions": "^7.0.0",
+    "expo-secure-store": "^7.0.0",
+    "expo-web-browser": "^7.0.1",
+    "expo-yarn-workspaces": "1.2.1",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-35.0.0.tar.gz"
   },
   "devDependencies": {
-    "@types/expo": "32.0.2",
     "@types/expo__vector-icons": "9.0.1",
-    "@types/react-native": "0.57.37",
-    "compression": "^1.7.1",
-    "connect": "^3.6.5",
-    "exp": "^57.2.1",
-    "haul": "^1.0.0-rc.9",
-    "http-proxy-middleware": "^0.19.0",
-    "webpack-dev-middleware": "^3.5.2",
-    "webpack-hot-middleware": "^2.24.3",
-    "xdl": "^49.2.0"
+    "@types/react-native": "0.60.22",
+    "babel-plugin-transform-inline-environment-variables": "0.4.3",
+    "exp": "57.2.1",
+    "expo-cli": "3.4.1",
+    "metro-minify-terser": "0.56.3",
+    "xdl": "53.7.4"
   }
 }

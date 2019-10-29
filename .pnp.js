@@ -44,11 +44,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       "./.yarn/virtual/"
     ],
     "fallbackExclusionList": [
-      ["@larix/create", ["workspace:packages/create"]],
-      ["@larix/generator", ["workspace:packages/generator"]],
-      ["@larix/monorepo", ["workspace:."]],
-      ["@larix/zen", ["workspace:packages/zen"]],
-      ["larix", ["workspace:packages/larix"]]
     ],
     "locationBlacklistData": [
     ],

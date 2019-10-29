@@ -528,7 +528,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larix/create@workspace:packages/create"
   dependencies:
-    "@larix/generator": "workspace:*"
+    "@larix/generator": "workspace:0.1.4"
     chalk: "npm:^2.4.1"
     source-map-support: "npm:^0.5.6"
   bin:
@@ -536,7 +536,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@larix/generator@workspace:*, @larix/generator@workspace:packages/generator":
+"@larix/generator@workspace:0.1.4, @larix/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@larix/generator@workspace:packages/generator"
   dependencies:

@@ -13,10 +13,12 @@ process
     process.exit(1);
   });
 
-(async () => {
-  const { appName } = await generate(templates, templateWriter, 'yarn create @larix', process.argv);
+export const runCli = async () => {
+  const result = await generate(templates, templateWriter, 'yarn create @larix');
+  if (!result) return;
+  const { appName } = result;
 
   console.log(`App ${chalk.green(appName)} generated successfully! Execute commands below to start it:\n`);
   console.log(chalk.yellow(`cd ${appName}`));
   console.log(chalk.yellow(`yarn start`));
-})();
+};

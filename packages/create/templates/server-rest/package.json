@@ -4,9 +4,9 @@
   "!presets": ["ts", "babel", "server"],
   "private": true,
   "scripts": {
-    "start": "zen start",
-    "build": "cross-env NODE_ENV=production zen build",
-    "test": "zen test"
+    "start": "webpack --watch",
+    "build": "cross-env NODE_ENV=production webpack",
+    "test": "jest"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -21,6 +21,7 @@
     "@types/express": "^4.11.1",
     "@types/opn": "5.1.0",
     "@types/swagger-ui-express": "^3.0.0",
-    "@types/ws": "^5.1.1"
+    "@types/ws": "^5.1.1",
+    "val-loader": "^1.1.1"
   }
 }

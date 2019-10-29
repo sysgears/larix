@@ -1,22 +1,25 @@
 {
   "!presets": ["webpack"],
+  "dependencies": {
+    "core-js": "^3.3.4"
+  },
   "devDependencies": {
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "@babel/plugin-proposal-decorators": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/plugin-transform-destructuring": "^7.0.0",
-    "@babel/plugin-transform-regenerator": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.0.0",
-    "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-decorators": "^7.6.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.0",
+    "@babel/plugin-transform-destructuring": "^7.6.0",
+    "@babel/plugin-transform-regenerator": "^7.4.5",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "@babel/polyfill": "^7.6.0",
+    "@babel/preset-typescript": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
     "@babel/preset-flow": "^7.0.0",
-    "@babel/preset-react": "^7.0.0",
-    "@babel/runtime": "^7.0.0",
-    "@babel/register": "^7.0.0",
+    "@babel/preset-react": "^7.6.0",
+    "@babel/runtime": "^7.6.0",
+    "@babel/register": "^7.6.0",
     "babel-core": "^7.0.0-0",
-    "babel-loader": "^8.0.4",
-    "babel-eslint": "^8.2.6"
+    "babel-loader": "^8.0.6"
   }
 }

@@ -1,6 +1,6 @@
-import * as fuzzy from 'fuzzy';
-import * as inquirer from 'inquirer';
-import * as autocomplete from 'inquirer-autocomplete-prompt';
+import fuzzy from 'fuzzy';
+import inquirer from 'inquirer';
+import autocomplete from 'inquirer-autocomplete-prompt';
 
 inquirer.registerPrompt('autocomplete', autocomplete);
 

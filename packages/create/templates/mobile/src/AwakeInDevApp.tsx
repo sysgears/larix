@@ -1,6 +1,9 @@
-import * as Expo from 'expo';
+import { AppLoading, registerRootComponent } from 'expo';
+import Constants from 'expo-constants';
+import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 import React from 'react';
 import { View } from 'react-native';
+
 import App from './App';
 
 interface AwakeInDevAppProps {
@@ -24,7 +27,7 @@ class AwakeInDevApp extends React.Component<AwakeInDevAppProps, AwakeInDevAppSta
 
   public render() {
     if (!this.state.isReady) {
-      return <Expo.AppLoading />;
+      return <AppLoading startAsync={null} onError={null} onFinish={null} />;
     }
 
     return React.createElement(
@@ -32,13 +35,25 @@ class AwakeInDevApp extends React.Component<AwakeInDevAppProps, AwakeInDevAppSta
       {
         style: {
           flex: 1,
-          marginTop: Expo.Constants.statusBarHeight
+          marginTop: Constants.statusBarHeight
         }
       },
-      React.createElement(App, this.props),
-      React.createElement(process.env.NODE_ENV === 'development' ? Expo.KeepAwake : View)
+      React.createElement(App, { ...this.props }),
+      React.createElement(View)
     );
+  }
+
+  public _activate() {
+    if (process.env.NODE_ENV === 'development') {
+      activateKeepAwake();
+    }
+  }
+
+  public _deactivate() {
+    if (process.env.NODE_ENV === 'development') {
+      deactivateKeepAwake();
+    }
   }
 }
 
-Expo.registerRootComponent(AwakeInDevApp);
+registerRootComponent(AwakeInDevApp);

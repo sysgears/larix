@@ -1,4 +1,2 @@
 #!/usr/bin/env node
-require('source-map-support').install();
-
-require('./lib');
+require('@larix/create').runCli();

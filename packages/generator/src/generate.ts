@@ -1,7 +1,7 @@
 import chalk from 'chalk';
-import * as minimist from 'minimist';
+import minimist from 'minimist';
 import 'source-map-support/register';
-import * as validatePackageName from 'validate-npm-package-name';
+import validatePackageName from 'validate-npm-package-name';
 
 import { TemplateFilePaths } from '.';
 import chooseTemplate from './chooseTemplate';

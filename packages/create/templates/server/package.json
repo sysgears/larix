@@ -4,9 +4,9 @@
   "!presets": ["ts", "babel", "server", "graphql"],
   "private": true,
   "scripts": {
-    "start": "zen start",
-    "build": "cross-env NODE_ENV=production zen build",
-    "test": "zen test"
+    "start": "webpack --watch",
+    "build": "cross-env NODE_ENV=production webpack",
+    "test": "jest"
   },
   "dependencies": {
     "apollo-server-express": "2.4.2",

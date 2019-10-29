@@ -1,15 +1,15 @@
 {
   "dependencies": {
     "raf": "^3.4.1",
-    "react": "16.8.2",
-    "react-dom": "16.8.2"
+    "react": "16.8.3",
+    "react-dom": "16.8.3"
   },
   "devDependencies": {
     "@types/prop-types": "15.5.9",
-    "@types/react": "16.8.2",
-    "@types/react-dom": "16.8.2"
+    "@types/react": "16.8.3",
+    "@types/react-dom": "16.8.3"
   },
   "resolutions": {
-    "@types/react": "16.8.2"
+    "@types/react": "16.8.3"
   }
 }

@@ -2,13 +2,16 @@
   "name": "//{slug//}",
   "private": true,
   "scripts": {
-    "start": "zen -e android -d ios start",
-    "android": "zen start -e android -d ios -d web",
-    "ios": "zen start -e ios -d android -d web",
-    "build": "zen build",
-    "test": "zen test"
+    "build": "lerna run build --stream",
+    "start": "lerna run start --stream",
+    "android": "lerna run android --stream",
+    "ios": "lerna run ios --stream",
+    "test": "lerna run test --stream"
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "lerna": "3.18.3"
+  }
 }
