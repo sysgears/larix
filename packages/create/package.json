@@ -1,6 +1,6 @@
 {
   "name": "@larix/create",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Larix apps creator",
   "author": "Victor Vlasenko <victor.vlasenko@sysgears.com>",
   "main": "./src/boot-dev.js",
