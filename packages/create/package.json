@@ -25,16 +25,18 @@
     "tests": "yarn test:unit packages/create",
     "tests:watch": "yarn test:unit packages/create --watch",
     "test": "yarn tests && yarn lint",
-    "prepack": "yarn clean && yarn build"
+    "prepack": "yarn clean && yarn build",
+    "postpack": "yarn clean"
   },
   "bin": "create-larix-app.js",
   "files": [
     "create-larix-app.js",
     "lib",
-    "templates"
+    "templates",
+    "README.md"
   ],
   "dependencies": {
-    "@larix/generator": "workspace:0.1.4",
+    "@larix/generator": "workspace:0.1.5",
     "chalk": "^2.4.1",
     "source-map-support": "^0.5.6"
   }
