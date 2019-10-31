@@ -95,6 +95,10 @@ export default class ConfigReader {
           const tmp = derivedConfig.builders[derivedName];
           delete derivedConfig.builders[derivedName];
           derivedConfig.builders[name] = tmp;
+          // Manual stack definition should override derived config
+          if (config.builders[name].stack) {
+            delete derivedConfig.builders[name].stack;
+          }
         }
       }
     }
