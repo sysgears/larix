@@ -8,7 +8,7 @@ require('react-native/packager/src/Resolver/polyfills/Array.es6.js');
 require('react-native/packager/src/Resolver/polyfills/Object.es7.js');
 require('react-native/packager/src/Resolver/polyfills/babelHelpers.js');
 
-declare let __DEV__;
+declare const __DEV__: boolean;
 
 (global as any).__DEV__ = __DEV__;
 (global as any).__BUNDLE_START_TIME__ = Date.now();
@@ -17,3 +17,5 @@ if (!(global as any).self) {
   (global as any).self = global;
 }
 require('react-native/Libraries/Core/InitializeCore.js');
+
+export {};
