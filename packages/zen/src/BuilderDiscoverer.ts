@@ -32,6 +32,7 @@ export default class BuilderDiscoverer {
     }
 
     let builders = this.configReader.readConfig({
+      ...(this.argv.x ? { inferedConfig: {} } : {}),
       filePath: this.argv.c ? path.join(dir, this.argv.c) : dir,
       builderOverrides
     });

@@ -10,7 +10,7 @@ export default (rootPath: string, relPath = '.', lastDir = '/'): string[] => {
       break;
     }
     curDir = curDir.substring(0, lastIdx);
-  } while (curDir !== lastDir);
+  } while (curDir.length >= lastDir.length);
 
   return paths;
 };

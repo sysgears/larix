@@ -586,11 +586,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larix/zen@workspace:packages/zen"
   dependencies:
+    "@types/debug": "npm:^4.1.5"
     "@types/inquirer": "npm:^0.0.35"
     "@types/ip": "npm:^0.0.30"
     "@types/lodash": "npm:^4.14.71"
+    "@types/minilog": "npm:^2.0.29"
     "@types/mkdirp": "npm:^0.5.0"
+    "@types/require-relative": "npm:^0.8.0"
     "@types/webpack": "npm:^3.0.10"
+    "@types/webpack-merge": "npm:^4.1.5"
     "@types/webpack-sources": "npm:^0.1.2"
     "@types/yargs": "npm:^8.0.2"
     connect-cors: "npm:^0.5.6"
@@ -614,7 +618,7 @@ __metadata:
     webpack-sources: "npm:^1.0.1"
     yargs: "npm:^8.0.2"
   bin:
-    zen: ./zen.js
+    zen: ./src/boot-cli-dev.js
   languageName: unknown
   linkType: soft
 
@@ -701,6 +705,13 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 64ecbf2b8b1bcc5d5345cd4dc6a5d14cd5bd08949e6a87cd6fc14e5c93077c211b9b3fef84238f768f05b4da5ecfcbd078fdb98e1a4db60b9fd15bde0671be97
+  languageName: node
+  linkType: hard
+
+"@types/debug@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "@types/debug@npm:4.1.5"
+  checksum: 07828461ade8646d3278ae05b1a10f1c9c9644aee20e93edbf658f0b91ed754f0ca30dc58ca4cbd018a7e9870596ffdd01265364ad7119057ad9e47dd9cb9c30
   languageName: node
   linkType: hard
 
@@ -825,6 +836,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/minilog@npm:^2.0.29":
+  version: 2.0.29
+  resolution: "@types/minilog@npm:2.0.29"
+  checksum: aca5b4160a3b29fb0f0dac15f2696868f6a0359c9657d821d4b93b589059165aaff568e8ca243405a66eb1446fd847f3edd30fd0f4355f6b51c1933f97133a68
+  languageName: node
+  linkType: hard
+
 "@types/minimatch@npm:*":
   version: 3.0.3
   resolution: "@types/minimatch@npm:3.0.3"
@@ -866,6 +884,13 @@ __metadata:
   version: 2.4.0
   resolution: "@types/normalize-package-data@npm:2.4.0"
   checksum: b1630889bc3aec064e80f523b789979a43ca0d301d5ec0bbc335ab8b01b8332dd04e51c2b572178c84b3390daafe7fb553855c87bfe323585c137c51caff73c4
+  languageName: node
+  linkType: hard
+
+"@types/require-relative@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@types/require-relative@npm:0.8.0"
+  checksum: 24d45654336c05c0617b8705e709f004a17013a3d5b603d968f76f62e8631daed77af245bf9151201732be8980aceefea1c691dacf126077877bf29671f9dd84
   languageName: node
   linkType: hard
 
@@ -1042,6 +1067,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/webpack-merge@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "@types/webpack-merge@npm:4.1.5"
+  dependencies:
+    "@types/webpack": "npm:*"
+  checksum: 9786ad1041a14b202bb74f5e21fb5f5ee2ef14a8418aaecd39e9bcbf5ff4fc2c681d0092b713995c6cc3b236e7b617f8030ea7b7de0c4bd7bb46a966e10d3f3e
+  languageName: node
+  linkType: hard
+
 "@types/webpack-sources@npm:^0.1.2":
   version: 0.1.5
   resolution: "@types/webpack-sources@npm:0.1.5"
@@ -1053,7 +1087,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack@npm:^3.0.10":
+"@types/webpack@npm:*, @types/webpack@npm:^3.0.10":
   version: 3.8.18
   resolution: "@types/webpack@npm:3.8.18"
   dependencies:
