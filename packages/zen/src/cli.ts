@@ -1,5 +1,5 @@
 import * as cluster from 'cluster';
-import * as minilog from 'minilog';
+import minilog from 'minilog';
 import * as yargs from 'yargs';
 
 import createBuilders from './createBuilders';
@@ -37,6 +37,12 @@ export default () => {
         alias: 'v',
         default: false,
         describe: 'Show generated config',
+        type: 'boolean'
+      })
+      .option('noinfer', {
+        alias: 'x',
+        default: false,
+        describe: 'Disable config inferring',
         type: 'boolean'
       })
       .version(VERSION).argv;

@@ -816,11 +816,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./packages/zen/",
           "packageDependencies": [
             ["@larix/zen", "workspace:packages/zen"],
+            ["@types/debug", "npm:4.1.5"],
             ["@types/inquirer", "npm:0.0.35"],
             ["@types/ip", "npm:0.0.30"],
             ["@types/lodash", "npm:4.14.144"],
+            ["@types/minilog", "npm:2.0.29"],
             ["@types/mkdirp", "npm:0.5.2"],
+            ["@types/require-relative", "npm:0.8.0"],
             ["@types/webpack", "npm:3.8.18"],
+            ["@types/webpack-merge", "npm:4.1.5"],
             ["@types/webpack-sources", "npm:0.1.5"],
             ["@types/yargs", "npm:8.0.3"],
             ["connect-cors", "npm:0.5.6"],
@@ -939,6 +943,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@types/connect", "npm:3.4.32"],
             ["@types/node", "npm:11.13.22"]
+          ],
+          "linkType": "HARD"
+        }]
+      ]],
+      ["@types/debug", [
+        ["npm:4.1.5", {
+          "packageLocation": "./.yarn/cache/@types-debug-npm-4.1.5-3464d6c971-1.zip/node_modules/@types/debug/",
+          "packageDependencies": [
+            ["@types/debug", "npm:4.1.5"]
           ],
           "linkType": "HARD"
         }]
@@ -1088,6 +1101,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"
         }]
       ]],
+      ["@types/minilog", [
+        ["npm:2.0.29", {
+          "packageLocation": "./.yarn/cache/@types-minilog-npm-2.0.29-8710f015a8-1.zip/node_modules/@types/minilog/",
+          "packageDependencies": [
+            ["@types/minilog", "npm:2.0.29"]
+          ],
+          "linkType": "HARD"
+        }]
+      ]],
       ["@types/minimatch", [
         ["npm:3.0.3", {
           "packageLocation": "./.yarn/cache/@types-minimatch-npm-3.0.3-c8b0625f84-1.zip/node_modules/@types/minimatch/",
@@ -1137,6 +1159,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-normalize-package-data-npm-2.4.0-ed928aaaa8-1.zip/node_modules/@types/normalize-package-data/",
           "packageDependencies": [
             ["@types/normalize-package-data", "npm:2.4.0"]
+          ],
+          "linkType": "HARD"
+        }]
+      ]],
+      ["@types/require-relative", [
+        ["npm:0.8.0", {
+          "packageLocation": "./.yarn/cache/@types-require-relative-npm-0.8.0-798ca6ec8f-1.zip/node_modules/@types/require-relative/",
+          "packageDependencies": [
+            ["@types/require-relative", "npm:0.8.0"]
           ],
           "linkType": "HARD"
         }]
@@ -1347,6 +1378,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/tapable", "npm:0.2.5"],
             ["@types/uglify-js", "npm:3.0.4"],
             ["source-map", "npm:0.6.1"]
+          ],
+          "linkType": "HARD"
+        }]
+      ]],
+      ["@types/webpack-merge", [
+        ["npm:4.1.5", {
+          "packageLocation": "./.yarn/cache/@types-webpack-merge-npm-4.1.5-2d7748bcf3-1.zip/node_modules/@types/webpack-merge/",
+          "packageDependencies": [
+            ["@types/webpack-merge", "npm:4.1.5"],
+            ["@types/webpack", "npm:3.8.18"]
           ],
           "linkType": "HARD"
         }]

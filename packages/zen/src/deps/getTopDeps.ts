@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as merge from 'webpack-merge';
+import merge from 'webpack-merge';
 
 import { RequireFunction } from '../createRequire';
 
@@ -48,7 +48,7 @@ const getTopDeps = (
                 if (depGroup !== 'dependencies') {
                   topDeps = { devDependencies: { ...topDeps.dependencies, ...topDeps.devDependencies } };
                 }
-                result = merge.smart(result, topDeps);
+                result = (merge as any).smart(result, topDeps);
               } else {
                 result[depGroup] = result[depGroup] || {};
                 result[depGroup][depName] = pkg[depGroup][depName];

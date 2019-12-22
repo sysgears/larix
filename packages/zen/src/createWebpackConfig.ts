@@ -1,4 +1,4 @@
-import * as minilog from 'minilog';
+import minilog from 'minilog';
 
 import createBuilders from './createBuilders';
 

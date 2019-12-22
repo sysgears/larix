@@ -1,2 +1,2 @@
-require('./boot-dev');
-require('./cli');
+#!/usr/bin/env node
+require('./boot-dev').cli();

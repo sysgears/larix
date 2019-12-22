@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as merge from 'webpack-merge';
+import merge from 'webpack-merge';
 
 import { Builders } from './Builder';
 import { ConfigPlugin } from './ConfigPlugin';
@@ -31,7 +31,7 @@ export default class ConfigReader {
       const dir = filePath;
       let derivedConfig = {};
       if (fs.existsSync(path.join(dir, 'package.json'))) {
-        derivedConfig = inferConfig(path.join(dir, 'package.json'));
+        derivedConfig = inferedConfig || inferConfig(path.join(dir, 'package.json'));
       }
       const candidates = ['.zenrc.json', '.zenrc', '.zenrc.js', 'package.json'];
       for (const fileName of candidates) {

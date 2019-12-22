@@ -5,6 +5,7 @@
     "lib": [
       "es2016"
     ],
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "declaration": true,

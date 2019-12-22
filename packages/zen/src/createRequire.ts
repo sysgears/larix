@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as requireRelative from 'require-relative';
+import requireRelative from 'require-relative';
 
 export interface RequireFunction {
   cwd: string;

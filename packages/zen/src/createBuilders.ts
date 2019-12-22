@@ -1,6 +1,6 @@
 import * as cluster from 'cluster';
 import * as fs from 'fs';
-import * as minilog from 'minilog';
+import minilog from 'minilog';
 
 import { Builder } from './Builder';
 import BuilderDiscoverer from './BuilderDiscoverer';
@@ -82,6 +82,7 @@ const createBuilders = ({
     discoveredBuilders = builderDiscoverer.discover(builderOverrides);
   } else {
     discoveredBuilders = new ConfigReader(zen, plugins).readConfig({
+      ...(argv.x ? { inferedConfig: {} } : {}),
       filePath: process.env.BUILDER_CONFIG_PATH,
       builderOverrides
     });

@@ -1,15 +1,15 @@
 import { exec, spawn } from 'child_process';
-import * as cluster from 'cluster';
+import cluster from 'cluster';
 import * as cors from 'connect-cors';
 import * as crypto from 'crypto';
-import * as Debug from 'debug';
+import Debug from 'debug';
 import * as detectPort from 'detect-port';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as ip from 'ip';
 import * as isDocker from 'is-docker';
 import * as _ from 'lodash';
-import * as minilog from 'minilog';
+import minilog from 'minilog';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as serveStatic from 'serve-static';
@@ -551,7 +551,6 @@ const startWebpackDevServer = (hasBackend: boolean, zen: Zen, builder: Builder, 
         logger.error(e.stack);
       }
     }
-    console.log('open:', config.devServer.open);
   });
 
   let serverPromise;
@@ -643,7 +642,7 @@ const startClientWebpack = (hasBackend, zen, builder) => {
 
   const logger = minilog(`${config.name}-webpack`);
   if (builder.silent) {
-    logger.suggest.deny(/.*/, 'debug');
+    (logger as any).suggest.deny(/.*/, 'debug');
   }
   try {
     const reporter = (...args) => webpackReporter(zen, builder, configOutputPath, logger, ...args);
@@ -679,7 +678,7 @@ const startServerWebpack = (zen, builder) => {
   const config = builder.config;
   const logger = minilog(`${config.name}-webpack`);
   if (builder.silent) {
-    logger.suggest.deny(/.*/, 'debug');
+    (logger as any).suggest.deny(/.*/, 'debug');
   }
 
   try {
@@ -961,7 +960,7 @@ const buildDll = (zen: Zen, builder: Builder) => {
     const name = getDllName(builder);
     const logger = minilog(`${config.name}-webpack`);
     if (builder.silent) {
-      logger.suggest.deny(/.*/, 'debug');
+      (logger as any).suggest.deny(/.*/, 'debug');
     }
     const reporter = (...args) => webpackReporter(zen, builder, config.output.path, logger, ...args);
 
