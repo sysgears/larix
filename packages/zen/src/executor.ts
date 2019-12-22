@@ -1,7 +1,7 @@
 import { exec, spawn } from 'child_process';
 import cluster from 'cluster';
 import * as cors from 'connect-cors';
-import * as crypto from 'crypto';
+import { createHash } from 'crypto';
 import Debug from 'debug';
 import * as detectPort from 'detect-port';
 import * as fs from 'fs';
@@ -934,8 +934,7 @@ const isDllValid = (zen, builder, logger): boolean => {
           logger.warn(`${name} DLL need to be regenerated, file: ${filename} is missing.`);
           return false;
         }
-        const hash = crypto
-          .createHash('md5')
+        const hash = createHash('md5')
           .update(fs.readFileSync(filename))
           .digest('hex');
         if (relMeta.hashes[filename] !== hash) {
@@ -988,8 +987,7 @@ const buildDll = (zen: Zen, builder: Builder) => {
           const meta = { name: vendorKey, hashes: {}, modules: config.entry.vendor, version: LARIX_DLL_VERSION };
           for (const filename of Object.keys(json.content)) {
             if (filename.indexOf(' ') < 0 && filename.indexOf('@virtual') < 0) {
-              meta.hashes[filename] = crypto
-                .createHash('md5')
+              meta.hashes[filename] = createHash('md5')
                 .update(fs.readFileSync(filename.split('!').pop()))
                 .digest('hex');
             }
