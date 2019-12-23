@@ -9495,7 +9495,7 @@ function fileSync(options) {
   const name = tmpNameSync(opts);
   var fd = fs.openSync(name, CREATE_FLAGS, opts.mode || FILE_MODE);
   if (opts.discardDescriptor) {
-    fs.closeSync(fd); 
+    fs.closeSync(fd);
     fd = undefined;
   }
 
@@ -13158,6 +13158,9 @@ function applyPatch(pnpapi, opts) {
   external_module_default.a._findPath = function (request, paths, isMain) {
     if (request === `pnpapi`) return false;
     if (!enableNativeHooks) return originalFindPath.call(external_module_default.a, request, paths, isMain);
+
+    if (!paths)
+      return false;
 
     for (const path of paths) {
       let resolution;
