@@ -44,7 +44,7 @@
     "tar-stream": "^1.6.2",
     "tmp": "^0.0.33",
     "yargs": "^12.0.5",
-    "yargs-parser": "^11.1.1",
+    "yargs-parser": "^19.0.4",
     "yarn": "^1.13.0"
   },
   "devDependencies": {
