@@ -452,24 +452,10 @@ const createConfig = (builder: Builder, zen: Zen) => {
         webpackDevPort = builder.webpackDevPort;
       }
 
-      const webpackDevProtocol = builder.webpackDevProtocol ? builder.webpackDevProtocol : 'http';
-      const webpackDevHost = builder.webpackDevHost ? builder.webpackDevHost : 'localhost';
-      let webpackDevPortStr = `:${webpackDevPort}`;
-
-      if (webpackDevProtocol === 'http' && webpackDevPort === 80) {
-        webpackDevPortStr = '';
-      }
-      if (webpackDevProtocol === 'https' && webpackDevPort === 443) {
-        webpackDevPortStr = '';
-      }
-      const webpackDevURL = `${webpackDevProtocol}://${webpackDevHost}${webpackDevPortStr}`;
-
       config = {
         ...config,
         entry: {
-          index: (zen.dev ? ['webpack/hot/dev-server', `webpack-dev-server/client?${webpackDevURL}/`] : []).concat([
-            builder.entry || './src/client/index.js'
-          ])
+          index: [builder.entry || './src/client/index.js']
         },
         output: {
           ...config.output,
