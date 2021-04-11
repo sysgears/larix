@@ -1,6 +1,6 @@
 {
   "name": "@larix/zen",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "main": "./src/boot-dev.js",
   "bin": "./src/boot-cli-dev.js",
   "scripts": {
