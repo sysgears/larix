@@ -72,7 +72,7 @@ const createPlugins = (builder: Builder, zen: Zen) => {
 
   if (!zen.dev && builder.require.probe('clean-webpack-plugin')) {
     const CleanWebpackPlugin = builder.require('clean-webpack-plugin');
-    plugins = plugins.concat(new CleanWebpackPlugin(builder.buildDir));
+    plugins = plugins.concat(CleanWebpackPlugin.CleanWebpackPlugin ? new CleanWebpackPlugin.CleanWebpackPlugin() : new CleanWebpackPlugin(builder.buildDir));
   }
 
   if (stack.hasAny('dll')) {
