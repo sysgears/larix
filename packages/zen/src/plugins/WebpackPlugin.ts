@@ -70,7 +70,7 @@ const createPlugins = (builder: Builder, zen: Zen) => {
     defines.__BACKEND_URL__ = `'${backendOption.replace('{ip}', ip.address())}'`;
   }
 
-  if (builder.require.probe('clean-webpack-plugin')) {
+  if (!zen.dev && builder.require.probe('clean-webpack-plugin')) {
     const CleanWebpackPlugin = builder.require('clean-webpack-plugin');
     plugins = plugins.concat(new CleanWebpackPlugin(builder.buildDir));
   }
